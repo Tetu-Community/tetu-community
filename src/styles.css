@@ -1,0 +1,15 @@
+a {
+  text-decoration: underline;
+}
+
+a:hover, li.active a {
+  text-decoration: none;
+}
+
+.tooltip-wrapper, .tooltip-wrapper .w-fit, .tooltip-wrapper svg {
+  display: inline;
+}
+
+.tooltip-wrapper svg {
+  margin-top: -2px;
+}
