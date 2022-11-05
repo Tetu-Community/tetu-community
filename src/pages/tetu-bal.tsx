@@ -196,6 +196,31 @@ const TetuBal: FC = () => {
                     })
                   }
                 </tbody>
+                <tfoot>
+                  <tr className="bg-white border-b dark:bg-gray-600 dark:border-gray-700">
+                    <th scope="row" className="py-4 px-6 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                      Totals:
+                    </th>
+                    <td className="py-4 px-6">
+                      {tableData.map(td => td[1]).reduce((a, b) => a.plus(b), BigNumber(0)).toFixed(2)}
+                    </td>
+                    <td className="py-4 px-6">
+                      ${tableData.map(td => td[2]).reduce((a, b) => a.plus(b), BigNumber(0)).toFixed(2)}
+                    </td>
+                    <td className="py-4 px-6">
+                      ${tableData.map(td => td[3]).reduce((a, b) => a.plus(b), BigNumber(0)).toFixed(2)}
+                    </td>
+                    <td className="py-4 px-6">
+                      ${tableData.map(td => td[4]).reduce((a, b) => a.plus(b), BigNumber(0)).toFixed(2)}
+                    </td>
+                    <td className="py-4 px-6">
+                      {tableData.map(td => td[5]).reduce((a, b) => a.plus(b), BigNumber(0)).toFixed(2)}
+                    </td>
+                    <td className="py-4 px-6">
+                      ${tableData.map(td => td[6]).reduce((a, b) => a.plus(b), BigNumber(0)).toFixed(2)}
+                    </td>
+                  </tr>
+                </tfoot>
               </table>
             </div>
           </div>
