@@ -2,22 +2,13 @@ import axios from 'axios'
 import { request, gql } from 'graphql-request'
 import BigNumber from 'bignumber.js'
 import { Contract } from '@ethersproject/contracts'
-import { getOrSetCache } from '@/lib/cache'
 import ms from 'ms'
 
 const SNAPSHOT_GRAPHQL_ENDPOINT = 'https://hub.snapshot.org/graphql'
 
-// cached for 5 minutes
 export async function getCoingeckoPrice(id: string): Promise<BigNumber> {
-  const rawPrice = await getOrSetCache(
-    `cg-raw-price-${id}`,
-    async () => {
-      const resp = await axios.get(`https://api.coingecko.com/api/v3/coins/${id}`)
-      return resp.data.market_data.current_price.usd
-    },
-    ms('5min')
-  )
-
+  const resp = await axios.get(`https://api.coingecko.com/api/v3/coins/${id}`)
+  const rawPrice= resp.data.market_data.current_price.usd
   return BigNumber(rawPrice)
 }
 
