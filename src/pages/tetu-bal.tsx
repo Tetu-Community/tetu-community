@@ -114,7 +114,7 @@ const TetuBal: FC = () => {
 
             <div className="overflow-x-auto relative pt-4">
               <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                <thead className="whitespace-nowrap text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                   <tr>
                     <th scope="col" className="py-3 px-6" onClick={() => setSort(0)}>
                       Title {sort === 0 ? <ChevronDownIcon className="inline w-2" />: ''}
@@ -146,6 +146,10 @@ const TetuBal: FC = () => {
                         <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700" key={i}>
                           <th scope="row" className="py-4 px-6 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                             {td[0]}
+                            &nbsp;
+                            <a href={`https://etherscan.io/address/${data.choicesToGaugeAddress[td[0]]}`} target="_blank" rel="noreferrer">
+                              <ArrowTopRightOnSquareIcon className="inline w-4 mb-1 text-slate-600" />
+                            </a>
                           </th>
                           <td className="py-4 px-6">
                             {BigNumber(td[1]).toFixed(2)}
