@@ -8,7 +8,7 @@ const SNAPSHOT_GRAPHQL_ENDPOINT = 'https://hub.snapshot.org/graphql'
 
 export async function getCoingeckoPrice(id: string): Promise<BigNumber> {
   const resp = await axios.get(`https://api.coingecko.com/api/v3/coins/${id}`)
-  const rawPrice= resp.data.market_data.current_price.usd
+  const rawPrice = resp.data.market_data.current_price.usd
   return BigNumber(rawPrice)
 }
 
