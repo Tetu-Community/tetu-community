@@ -4,16 +4,36 @@ import InfoBubble from '../components/InfoBubble'
 import useSWR from 'swr'
 import fetcher from '../lib/fetcher'
 import range from 'lodash.range'
-import { ChevronDownIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/solid'
+import { ChevronDownIcon, ChevronUpIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/solid'
 import { useAccount } from 'wagmi'
 import Countdown from 'react-countdown'
 
 // https://balancer-dao.gitbook.io/learn-about-balancer/fundamentals/vebal-tokenomics/inflation-schedule
 const BAL_EMISSIONS_PER_WEEK = BigNumber(145000)
 
+const SortIndicator: FC<{ sortBy: any, sortDirection: any, thisIndex: any }> = ({ sortBy, sortDirection, thisIndex }) => {
+  if (sortBy !== thisIndex) return
+
+  if (sortDirection === 'desc') {
+    return <ChevronDownIcon className="inline w-2" />
+  } else {
+    return <ChevronUpIcon className="inline w-2" />
+  }
+}
+
 const TetuBal: FC = () => {
   const { isConnected, address } = useAccount()
-  const [sort, setSort] = useState(1)
+  const [sortBy, setSortBy] = useState(1)
+  const [sortDirection, setSortDirection] = useState('desc')
+
+  function sortTrigger(thisIndex) {
+    if (sortBy === thisIndex) {
+      setSortDirection(sortDirection === 'desc' ? 'asc' : 'desc')
+    } else {
+      setSortBy(thisIndex)
+      setSortDirection('desc')
+    }
+  }
 
   const { data, error } = useSWR('/api/tetu-bal', fetcher)
 
@@ -66,12 +86,14 @@ const TetuBal: FC = () => {
   }
 
   tableData.sort((a, b) => {
-    if (typeof (a[sort]) === 'string' && isNaN(a[sort])) {
-      return a[sort].localeCompare(b[sort])
+    if (typeof (a[sortBy]) === 'string' && isNaN(a[sortBy])) {
+      return a[sortBy].localeCompare(b[sortBy])
     } else {
-      return BigNumber(a[sort]).gt(b[sort]) ? -1 : 1
+      return BigNumber(a[sortBy]).gt(b[sortBy]) ? -1 : 1
     }
   })
+
+  if (sortDirection === 'asc') tableData.reverse()
 
 	return (
     <div className="max-w-6xl mx-auto px-6 pt-4">
@@ -116,26 +138,26 @@ const TetuBal: FC = () => {
               <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                 <thead className="whitespace-nowrap text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                   <tr>
-                    <th scope="col" className="py-3 px-6" onClick={() => setSort(0)}>
-                      Title {sort === 0 ? <ChevronDownIcon className="inline w-2" />: ''}
+                    <th scope="col" className="py-3 px-6" onClick={() => sortTrigger(0)}>
+                      Title <SortIndicator sortBy={sortBy} sortDirection={sortDirection} thisIndex={0} />
                     </th>
-                    <th scope="col" className="py-3 px-6" onClick={() => setSort(1)}>
-                      Total Votes {sort === 1 ? <ChevronDownIcon className="inline w-2" />: ''}
+                    <th scope="col" className="py-3 px-6" onClick={() => sortTrigger(1)}>
+                      Total Votes <SortIndicator sortBy={sortBy} sortDirection={sortDirection} thisIndex={1} />
                     </th>
-                    <th scope="col" className="py-3 px-6" onClick={() => setSort(2)}>
-                      $ Bribes {sort === 2 ? <ChevronDownIcon className="inline w-2" />: ''}
+                    <th scope="col" className="py-3 px-6" onClick={() => sortTrigger(2)}>
+                      $ Bribes <SortIndicator sortBy={sortBy} sortDirection={sortDirection} thisIndex={2} />
                     </th>
-                    <th scope="col" className="py-3 px-6" onClick={() => setSort(3)}>
-                      $/dxTETU {sort === 3 ? <ChevronDownIcon className="inline w-2" />: ''}
+                    <th scope="col" className="py-3 px-6" onClick={() => sortTrigger(3)}>
+                      $/dxTETU <SortIndicator sortBy={sortBy} sortDirection={sortDirection} thisIndex={3} />
                     </th>
-                    <th scope="col" className="py-3 px-6" onClick={() => setSort(4)}>
-                      Est. Emissions {sort === 4 ? <ChevronDownIcon className="inline w-2" />: ''}
+                    <th scope="col" className="py-3 px-6" onClick={() => sortTrigger(4)}>
+                      Est. Emissions <SortIndicator sortBy={sortBy} sortDirection={sortDirection} thisIndex={4} />
                     </th>
-                    <th scope="col" className="py-3 px-6" onClick={() => setSort(5)}>
-                      My Votes {sort === 5 ? <ChevronDownIcon className="inline w-2" />: ''}
+                    <th scope="col" className="py-3 px-6" onClick={() => sortTrigger(5)}>
+                      My Votes <SortIndicator sortBy={sortBy} sortDirection={sortDirection} thisIndex={5} />
                     </th>
-                    <th scope="col" className="py-3 px-6" onClick={() => setSort(6)}>
-                      My Bribes {sort === 6 ? <ChevronDownIcon className="inline w-2" />: ''}
+                    <th scope="col" className="py-3 px-6" onClick={() => sortTrigger(6)}>
+                      My Bribes <SortIndicator sortBy={sortBy} sortDirection={sortDirection} thisIndex={6} />
                     </th>
                   </tr>
                 </thead>
