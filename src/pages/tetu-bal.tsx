@@ -1,10 +1,11 @@
 import BigNumber from 'bignumber.js'
 import { FC, useState } from 'react'
 import InfoBubble from '@/components/InfoBubble'
+import BribeModal from '@/components/BribeModal'
 import useSWR from 'swr'
 import fetcher from '@/lib/fetcher'
 import range from 'lodash.range'
-import { ChevronDownIcon, ChevronUpIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/solid'
+import { ChevronDownIcon, ChevronUpIcon, ArrowTopRightOnSquareIcon, BanknotesIcon } from '@heroicons/react/24/solid'
 import { useAccount } from 'wagmi'
 import Countdown from 'react-countdown'
 
@@ -29,6 +30,7 @@ const TetuBal: FC = () => {
 	const { isConnected, address } = useAccount()
 	const [sortBy, setSortBy] = useState(1)
 	const [sortDirection, setSortDirection] = useState('desc')
+	const [showBribeModal, setShowBribeModal] = useState(false)
 
 	function sortTrigger(thisIndex) {
 		if (sortBy === thisIndex) {
@@ -142,7 +144,12 @@ const TetuBal: FC = () => {
 			</div>
 
 			{data ? (
-				<div>
+				<>
+					<BribeModal
+						show={showBribeModal}
+						choicesToGaugeAddress={data.choicesToGaugeAddress}
+						onClose={() => setShowBribeModal(false)}
+					/>
 					<div className="flex justify-between">
 						<h2 className="text-2xl pb-2">{data.snapshotData.proposal.title}</h2>
 						<div className="pt-1">
@@ -157,6 +164,13 @@ const TetuBal: FC = () => {
 							Vote on Snapshot.org &nbsp;
 							<ArrowTopRightOnSquareIcon className="inline w-4 mb-1" />
 						</a>
+						<span
+							className="ml-4 underline hover:no-underline cursor-pointer"
+							onClick={() => setShowBribeModal(true)}
+						>
+							Add a bribe &nbsp;
+							<BanknotesIcon className="inline w-4 mb-1" />
+						</span>
 					</h3>
 
 					<div className="overflow-x-auto relative pt-4">
@@ -279,7 +293,7 @@ const TetuBal: FC = () => {
 							</tfoot>
 						</table>
 					</div>
-				</div>
+				</>
 			) : (
 				<div className="blur-md">
 					<h2 className="text-2xl pb-2">BRV-TEST: Gauge Weight for Week of 10th November 2022</h2>
