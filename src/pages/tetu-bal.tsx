@@ -42,7 +42,7 @@ const TetuBal: FC = () => {
 		}
 	}
 
-	const { data, error } = useSWR('/api/tetu-bal', fetcher)
+	const { data, error, mutate } = useSWR('/api/tetu-bal', fetcher)
 
 	const snapshotUrl = data
 		? `https://snapshot.org/#/${data.snapshotData.proposal.space.id}/proposal/${data.snapshotData.proposal.id}`
@@ -149,7 +149,10 @@ const TetuBal: FC = () => {
 					<BribeModal
 						show={showBribeModal}
 						choicesToGaugeAddress={data.choicesToGaugeAddress}
-						onClose={() => setShowBribeModal(false)}
+						onClose={() => {
+							setShowBribeModal(false)
+							mutate()
+						}}
 					/>
 					<div className="flex justify-between">
 						<h2 className="text-2xl pb-2">{data.snapshotData.proposal.title}</h2>
