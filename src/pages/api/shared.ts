@@ -133,5 +133,7 @@ export async function getBribeData(provider: any, proposalId: string): Promise<a
 	const c = new Contract(TETUBAL_BRIBE_VAULT_ADDRESS, require('@/abi/BribeVault.json'), provider)
 	const res = await c.bribesByEpoch(keccak256(proposalId))
 	// TODO: add prices in USD?
-	return res
+	return {
+		bribes: {},
+	}
 }

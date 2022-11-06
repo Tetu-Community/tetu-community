@@ -52,7 +52,10 @@ const TetuBal: FC = () => {
 
 	if (data) {
 		emissionsPerVeBalUsd = BAL_EMISSIONS_PER_WEEK.div(data.veBalTotalSupply).times(data.balPrice)
-		totalBribes = Object.values(data.bribesUsd).reduce((a: BigNumber, b: BigNumber) => a.plus(b), BigNumber(0))
+		totalBribes = Object.values(data.bribeData.bribes).reduce(
+			(a: BigNumber, b: BigNumber) => a.plus(b),
+			BigNumber(0)
+		)
 		const dxTetuControlledBalEmissions = BAL_EMISSIONS_PER_WEEK.times(data.tetuBalTotalSupply).div(
 			data.veBalTotalSupply
 		)
@@ -80,7 +83,7 @@ const TetuBal: FC = () => {
 		for (const i in data.snapshotData.proposal.choices) {
 			const choice = data.snapshotData.proposal.choices[i]
 			const score = BigNumber(data.snapshotData.proposal.scores[i])
-			const bribeUsd = BigNumber(data.bribesUsd[choice] || 0)
+			const bribeUsd = BigNumber(data.bribeData.bribes[choice] || 0)
 			const bribePerVote = score.gt(0) ? bribeUsd.div(score) : bribeUsd.gt(0) ? bribeUsd : BigNumber(0)
 			const emissionsValue = dxTetuControlledBalEmissions
 				.times(score)
