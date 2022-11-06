@@ -3,7 +3,7 @@ import { request, gql } from 'graphql-request'
 import BigNumber from 'bignumber.js'
 import { Contract } from '@ethersproject/contracts'
 import ms from 'ms'
-import { TETUBAL_BRIBE_VAULT_ADDRESS } from '@/lib/consts'
+import { TETUBAL_BRIBE_VAULT_ADDRESS, TETU_LIQUIDATOR_ADDRESS, USDC_ADDRESS } from '@/lib/consts'
 import { keccak256 } from '@ethersproject/keccak256'
 const SNAPSHOT_GRAPHQL_ENDPOINT = 'https://hub.snapshot.org/graphql'
 
@@ -132,8 +132,39 @@ export async function getAllGaugeAddresses(): Promise<any> {
 export async function getBribeData(provider: any, proposalId: string): Promise<any> {
 	const c = new Contract(TETUBAL_BRIBE_VAULT_ADDRESS, require('@/abi/BribeVault.json'), provider)
 	const res = await c.bribesByEpoch(keccak256(proposalId))
-	// TODO: add prices in USD?
-	return {
-		bribes: {},
+
+	const retBribes = []
+
+	for (const b of res) {
+		retBribes.push({
+			gauge: b.gauge,
+			token: b.bribeToken,
+			amount: b.amount,
+		})
 	}
+
+	const tetuLiquidator = new Contract(
+		TETU_LIQUIDATOR_ADDRESS,
+		['function getPrice(address tokenIn, address tokenOut, uint amount) external view returns (uint)'],
+		provider
+	)
+
+	await Promise.all(
+		retBribes.map(async function (b, i) {
+			try {
+				retBribes[i].amountUsdc = await tetuLiquidator.getPrice(b.token, USDC_ADDRESS, b.amount)
+			} catch (err) {
+				// nada
+			}
+		})
+	)
+
+	// convert bignumber to string
+	return retBribes.map(b => {
+		return {
+			...b,
+			amount: b.amount.toString(),
+			amountUsdc: b.amountUsdc.toString(),
+		}
+	})
 }

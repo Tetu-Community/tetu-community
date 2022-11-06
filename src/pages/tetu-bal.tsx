@@ -50,15 +50,12 @@ const TetuBal: FC = () => {
 
 	let tableData = []
 	let emissionsPerVeBalUsd = BigNumber(0)
-	let totalBribes
+	let totalBribes = BigNumber(0)
 	let potentialBribeRoi = BigNumber(0)
 
 	if (data) {
 		emissionsPerVeBalUsd = BAL_EMISSIONS_PER_WEEK.div(data.veBalTotalSupply).times(data.balPrice)
-		totalBribes = Object.values(data.bribeData.bribes).reduce(
-			(a: BigNumber, b: BigNumber) => a.plus(b),
-			BigNumber(0)
-		)
+		for (const b of data.bribes) totalBribes = totalBribes.plus(BigNumber(b.amountUsdc).shiftedBy(-6))
 		const dxTetuControlledBalEmissions = BAL_EMISSIONS_PER_WEEK.times(data.tetuBalTotalSupply).div(
 			data.veBalTotalSupply
 		)
@@ -86,7 +83,10 @@ const TetuBal: FC = () => {
 		for (const i in data.snapshotData.proposal.choices) {
 			const choice = data.snapshotData.proposal.choices[i]
 			const score = BigNumber(data.snapshotData.proposal.scores[i])
-			const bribeUsd = BigNumber(data.bribeData.bribes[choice] || 0)
+			const gaugeAddressPrefix = choice.split('0x')[1].split(')')[0].toLowerCase()
+			let bribeUsd = BigNumber(0)
+			const matchingBribes = data.bribes.filter(b => b.gauge.toLowerCase().includes(gaugeAddressPrefix))
+			for (const b of matchingBribes) bribeUsd = bribeUsd.plus(BigNumber(b.amountUsdc).shiftedBy(-6))
 			const bribePerVote = score.gt(0) ? bribeUsd.div(score) : bribeUsd.gt(0) ? bribeUsd : BigNumber(0)
 			const emissionsValue = dxTetuControlledBalEmissions
 				.times(score)

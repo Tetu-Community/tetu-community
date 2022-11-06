@@ -39,6 +39,7 @@ const BribeModal: FC<{ show: boolean; onClose: Function; choicesToGaugeAddress: 
 
 	async function loadConfirmPage() {
 		try {
+			setError('')
 			setIsLoadingConfirmPage(true)
 
 			const tokenContract = new Contract(tokenAddressRaw, erc20ABI, provider)
@@ -76,6 +77,7 @@ const BribeModal: FC<{ show: boolean; onClose: Function; choicesToGaugeAddress: 
 	}
 
 	async function submitBribe() {
+		setError('')
 		setIsSigningTransaction(true)
 
 		if (needsApprove) {
