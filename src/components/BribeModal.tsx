@@ -253,9 +253,31 @@ const BribeModal: FC<{ show: boolean; onClose: Function; choicesToGaugeAddress: 
 						) : (
 							''
 						)}
-
-						<div>Token: {tokenSymbol}</div>
-						<div>Bribe Amount: {formatUnits(bribeAmountParsed, tokenDecimals)}</div>
+						<dl>
+							<dt className="text-md font-medium text-gray-200">Gauge</dt>
+							<dd className="mt-1 text-md text-gray-300">
+								{' '}
+								<a
+									href={`https://etherscan.io/address/${gaugeAddress}`}
+									target="_blank"
+									rel="noreferrer"
+								>
+									{gaugeAddress.toString()}
+								</a>
+							</dd>
+							<dt className="mt-6 text-md font-medium text-gray-200">Bribe amount</dt>
+							<dd className="mt-1 text-md text-gray-300">
+								{formatUnits(bribeAmountParsed, tokenDecimals)}
+								&nbsp;
+								<a
+									href={`https://polygonscan.com/address/${tokenAddressRaw}`}
+									target="_blank"
+									rel="noreferrer"
+								>
+									{tokenSymbol}
+								</a>
+							</dd>
+						</dl>
 					</Modal.Body>
 					<Modal.Footer>
 						{isSigningTransaction ? (
