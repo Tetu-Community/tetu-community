@@ -3,7 +3,8 @@ import { request, gql } from 'graphql-request'
 import BigNumber from 'bignumber.js'
 import { Contract } from '@ethersproject/contracts'
 import ms from 'ms'
-
+import { TETUBAL_BRIBE_VAULT_ADDRESS } from '@/lib/consts'
+import { keccak256 } from '@ethersproject/keccak256'
 const SNAPSHOT_GRAPHQL_ENDPOINT = 'https://hub.snapshot.org/graphql'
 
 export async function getCoingeckoPrice(id: string): Promise<BigNumber> {
@@ -79,17 +80,10 @@ export async function getSnapshotData(proposalId: string): Promise<any> {
       ) {
         id
         title
-        body
         choices
         start
         end
-        snapshot
-        state
         scores
-        scores_by_strategy
-        scores_total
-        scores_updated
-        author
         space {
           id
           name
@@ -108,7 +102,6 @@ export async function getSnapshotData(proposalId: string): Promise<any> {
         id
         voter
         vp
-        created
         choice
       }
     }
@@ -136,4 +129,9 @@ export async function getAllGaugeAddresses(): Promise<any> {
 	return resp.gauges.map(g => g.address)
 }
 
-export async function getBribeData(provider: any, proposalId: string): Promise<any> {}
+export async function getBribeData(provider: any, proposalId: string): Promise<any> {
+	const c = new Contract(TETUBAL_BRIBE_VAULT_ADDRESS, require('@/abi/BribeVault.json'), provider)
+	const res = await c.bribesByEpoch(keccak256(proposalId))
+	// TODO: add prices in USD?
+	return res
+}

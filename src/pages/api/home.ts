@@ -9,7 +9,7 @@ import {
 	TETUQI_ADDRESS,
 	QIPOWAH_ADDRESS,
 	TETU_TETUQI_QI_LP_ADDRESS,
-} from '@/constants'
+} from '@/lib/consts'
 
 import {
 	getCoingeckoPrice,
