@@ -4,9 +4,9 @@ import InfoBubble from '@/components/InfoBubble'
 import useSWR from 'swr'
 import fetcher from '@/lib/fetcher'
 
-const LATEST_BRIBES_PER_1_PERCENT = BigNumber('480')
-const LATEST_EQI_VOTING = BigNumber('42896193.83708467')
-const LATEST_DXTETU_VOTING = BigNumber('52287390.14')
+const LATEST_BRIBES_PER_1_PERCENT = BigNumber('700')
+const LATEST_EQI_VOTING = BigNumber('99127841.59410582')
+const LATEST_DXTETU_VOTING = BigNumber('56958460.483042136')
 
 const TetuQi: FC = () => {
 	const { data, error } = useSWR('/api/home', fetcher)
@@ -43,17 +43,17 @@ const TetuQi: FC = () => {
 
 			<div className="grid md:grid-cols-2 gap-4 pt-4">
 				<InfoBubble loading={!data} title="Latest Bribes per 1%">
-					<a href="https://ajb.github.io/qi-bribes/21/" target="_blank" rel="noreferrer">
+					<a href="https://ajb.github.io/qi-bribes/" target="_blank" rel="noreferrer">
 						{LATEST_BRIBES_PER_1_PERCENT.toFixed(0)} QI
 					</a>
 				</InfoBubble>
 				<InfoBubble loading={!data} title="Latest eQI voting">
-					<a href="https://ajb.github.io/qi-bribes/21/" target="_blank" rel="noreferrer">
+					<a href="https://ajb.github.io/qi-bribes/" target="_blank" rel="noreferrer">
 						{LATEST_EQI_VOTING.toFormat(0)} eQI
 					</a>
 				</InfoBubble>
 				<InfoBubble loading={!data} title="Latest dxTETU voting">
-					<a href="https://ajb.github.io/qi-bribes/21/" target="_blank" rel="noreferrer">
+					<a href="https://ajb.github.io/qi-bribes/" target="_blank" rel="noreferrer">
 						{LATEST_DXTETU_VOTING.toFormat(0)} dxTETU
 					</a>
 				</InfoBubble>
