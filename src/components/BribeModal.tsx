@@ -4,7 +4,12 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { parseUnits, formatUnits } from '@ethersproject/units'
 import { useAccount, useProvider, erc20ABI, useSigner } from 'wagmi'
 import { Contract } from '@ethersproject/contracts'
-import { TETUBAL_BRIBE_VAULT_ADDRESS, CURRENT_SNAPSHOT_PROPOSAL_ID } from '@/lib/consts'
+import {
+	TETUBAL_BRIBE_VAULT_ADDRESS,
+	CURRENT_SNAPSHOT_PROPOSAL_ID,
+	TETU_LIQUIDATOR_ADDRESS,
+	USDC_ADDRESS,
+} from '@/lib/consts'
 import { keccak256 } from '@ethersproject/keccak256'
 
 const BribeModal: FC<{ show: boolean; onClose: Function; choicesToGaugeAddress: any }> = ({
@@ -33,6 +38,7 @@ const BribeModal: FC<{ show: boolean; onClose: Function; choicesToGaugeAddress: 
 	const [tokenSymbol, setTokenSymbol] = useState('')
 	const [tokenDecimals, setTokenDecimals] = useState(0)
 	const [bribeAmountParsed, setBribeAmountParsed] = useState(BigNumber.from(0))
+	const [bribeAmountUsdc, setBribeAmountUsdc] = useState(BigNumber.from(0))
 	const [needsApprove, setNeedsApprove] = useState(false)
 	const [isSigningTransaction, setIsSigningTransaction] = useState(false)
 	const [isWaitingForTransaction, setIsWaitingForTransaction] = useState(false)
@@ -64,6 +70,14 @@ const BribeModal: FC<{ show: boolean; onClose: Function; choicesToGaugeAddress: 
 				return
 			}
 
+			const tetuLiquidator = new Contract(
+				TETU_LIQUIDATOR_ADDRESS,
+				['function getPrice(address tokenIn, address tokenOut, uint amount) external view returns (uint)'],
+				provider
+			)
+
+			const gotBribeAmountUsdc = await tetuLiquidator.getPrice(tokenAddressRaw, USDC_ADDRESS, amtParsed)
+			setBribeAmountUsdc(gotBribeAmountUsdc)
 			setBribeAmountParsed(amtParsed)
 			setTokenDecimals(gotDecimals)
 			setTokenSymbol(gotSymbol)
@@ -277,6 +291,12 @@ const BribeModal: FC<{ show: boolean; onClose: Function; choicesToGaugeAddress: 
 									{tokenSymbol}
 								</a>
 							</dd>
+							<dt className="mt-6 text-md font-medium text-gray-200">Bribe value</dt>
+							<dd className="mt-1 text-md text-gray-300">{formatUnits(bribeAmountUsdc, 6)} USDC</dd>
+							<p className="text-sm mt-2 text-gray-400">
+								If the price is incorrect, you can still submit your bribe. However, please contact us
+								in Discord in order to add a corrected price provider.
+							</p>
 						</dl>
 					</Modal.Body>
 					<Modal.Footer>
