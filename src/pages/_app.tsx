@@ -8,9 +8,9 @@ const App = ({ Component, pageProps }) => {
 	return (
 		<ThemeProvider attribute="class" enableSystem={false} defaultTheme={'dark'}>
 			<Web3Provider>
-        <Layout>
-          <Component {...pageProps} />
-        </Layout>
+				<Layout>
+					<Component {...pageProps} />
+				</Layout>
 			</Web3Provider>
 		</ThemeProvider>
 	)
