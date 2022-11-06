@@ -1,8 +1,8 @@
 import BigNumber from 'bignumber.js'
 import { FC } from 'react'
-import InfoBubble from '../components/InfoBubble'
+import InfoBubble from '@/components/InfoBubble'
 import useSWR from 'swr'
-import fetcher from '../lib/fetcher'
+import fetcher from '@/lib/fetcher'
 
 const LATEST_BRIBES_PER_1_PERCENT = BigNumber('480')
 const LATEST_EQI_VOTING = BigNumber('42896193.83708467')

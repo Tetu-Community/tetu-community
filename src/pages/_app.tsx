@@ -1,8 +1,8 @@
 import 'tailwindcss/tailwind.css'
-import '../styles.css'
+import '@/styles.css'
 import { ThemeProvider } from 'next-themes'
 import Web3Provider from '@/components/Web3Provider'
-import Layout from '../components/Layout'
+import Layout from '@/components/Layout'
 
 const App = ({ Component, pageProps }) => {
 	return (

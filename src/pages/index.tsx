@@ -1,8 +1,8 @@
 import BigNumber from 'bignumber.js'
 import { FC } from 'react'
-import InfoBubble from '../components/InfoBubble'
+import InfoBubble from '@/components/InfoBubble'
 import useSWR from 'swr'
-import fetcher from '../lib/fetcher'
+import fetcher from '@/lib/fetcher'
 
 const Home: FC = () => {
   const { data, error } = useSWR('/api/home', fetcher)

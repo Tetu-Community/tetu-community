@@ -129,3 +129,10 @@ export async function getAllGaugeAddresses(): Promise<any> {
 
   return resp.gauges.map(g => g.address)
 }
+
+export async function getBribeData(provider: any, proposalId: string): Promise<any> {
+
+
+
+
+}
