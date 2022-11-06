@@ -8,6 +8,7 @@ import range from 'lodash.range'
 import { ChevronDownIcon, ChevronUpIcon, ArrowTopRightOnSquareIcon, BanknotesIcon } from '@heroicons/react/24/solid'
 import { useAccount } from 'wagmi'
 import Countdown from 'react-countdown'
+import { Tooltip } from 'flowbite-react'
 
 // https://balancer-dao.gitbook.io/learn-about-balancer/fundamentals/vebal-tokenomics/inflation-schedule
 const BAL_EMISSIONS_PER_WEEK = BigNumber(145000)
@@ -164,13 +165,22 @@ const TetuBal: FC = () => {
 							Vote on Snapshot.org &nbsp;
 							<ArrowTopRightOnSquareIcon className="inline w-4 mb-1" />
 						</a>
-						<span
-							className="ml-4 underline hover:no-underline cursor-pointer"
-							onClick={() => setShowBribeModal(true)}
-						>
-							Add a bribe &nbsp;
-							<BanknotesIcon className="inline w-4 mb-1" />
-						</span>
+						{isConnected ? (
+							<span
+								className="ml-4 underline hover:no-underline cursor-pointer"
+								onClick={() => setShowBribeModal(true)}
+							>
+								Add a bribe &nbsp;
+								<BanknotesIcon className="inline w-4 mb-1" />
+							</span>
+						) : (
+							<span className="ml-4 cursor-pointer text-slate-600 tooltip-wrapper">
+								<Tooltip content="You must connect your wallet to add a bribe" placement="top">
+									Add a bribe &nbsp;
+									<BanknotesIcon className="inline w-4 mb-1" />
+								</Tooltip>
+							</span>
+						)}
 					</h3>
 
 					<div className="overflow-x-auto relative pt-4">
