@@ -182,7 +182,10 @@ export async function getHiddenHandBribeData() {
 	for (const p of res.data.pageProps.proposalsData) {
 		ret.currentVote = ret.currentVote.plus(p.voteCount)
 		if (p.totalValue === 0) continue
-		ret.bribes[p.proposal] = p.totalValue
+		ret.bribes[p.proposal] = {
+			value: p.totalValue,
+			votes: p.voteCount,
+		}
 	}
 
 	return ret

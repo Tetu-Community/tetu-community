@@ -5,7 +5,13 @@ import BribeModal from '@/components/BribeModal'
 import useSWR from 'swr'
 import fetcher from '@/lib/fetcher'
 import range from 'lodash.range'
-import { ChevronDownIcon, ChevronUpIcon, ArrowTopRightOnSquareIcon, BanknotesIcon } from '@heroicons/react/24/solid'
+import {
+	ChevronDownIcon,
+	ChevronUpIcon,
+	ArrowTopRightOnSquareIcon,
+	BanknotesIcon,
+	QuestionMarkCircleIcon,
+} from '@heroicons/react/24/solid'
 import { useAccount } from 'wagmi'
 import Countdown from 'react-countdown'
 import { Tooltip } from 'flowbite-react'
@@ -29,7 +35,7 @@ const SortIndicator: FC<{ sortBy: any; sortDirection: any; thisIndex: any }> = (
 
 const TetuBal: FC = () => {
 	const { isConnected, address } = useAccount()
-	const [sortBy, setSortBy] = useState(1)
+	const [sortBy, setSortBy] = useState('score')
 	const [sortDirection, setSortDirection] = useState('desc')
 	const [showBribeModal, setShowBribeModal] = useState(false)
 
@@ -87,6 +93,22 @@ const TetuBal: FC = () => {
 			let bribeUsd = BigNumber(0)
 			const matchingBribes = data.bribes.filter(b => b.gauge.toLowerCase().includes(gaugeAddressPrefix))
 			for (const b of matchingBribes) bribeUsd = bribeUsd.plus(BigNumber(b.amountUsdc).shiftedBy(-6))
+
+			const hiddenHandBribesObj = Object.entries(data.hiddenHandBribes.bribes).find(b =>
+				b[0].toLowerCase().includes(gaugeAddressPrefix)
+			) as Object
+
+			let hiddenHandBribeInfo
+			if (hiddenHandBribesObj) {
+				const bribeScaledToTetu = BigNumber(hiddenHandBribesObj[1].value.toString())
+					.times(data.tetuBalTotalSupply)
+					.div(data.veBalTotalSupply)
+				bribeUsd = bribeUsd.plus(bribeScaledToTetu)
+				hiddenHandBribeInfo = {
+					existingVotes: BigNumber(hiddenHandBribesObj[1].votes.toString()),
+				}
+			}
+
 			const bribePerVote = score.gt(0) ? bribeUsd.div(score) : bribeUsd.gt(0) ? bribeUsd : BigNumber(0)
 			const emissionsValue = dxTetuControlledBalEmissions
 				.times(score)
@@ -96,7 +118,16 @@ const TetuBal: FC = () => {
 			const myVotes = myVoteChoicesToVp[choice] || BigNumber(0)
 			const myBribes = bribePerVote.times(myVotes)
 
-			tableData.push([choice, score, bribeUsd, bribePerVote, emissionsValue, myVotes, myBribes])
+			tableData.push({
+				choice,
+				score,
+				bribeUsd,
+				bribePerVote,
+				emissionsValue,
+				myVotes,
+				myBribes,
+				hiddenHandBribeInfo,
+			})
 		}
 	}
 
@@ -190,33 +221,61 @@ const TetuBal: FC = () => {
 						<table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
 							<thead className="whitespace-nowrap text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
 								<tr>
-									<th scope="col" className="py-3 px-6" onClick={() => sortTrigger(0)}>
+									<th scope="col" className="py-3 px-6" onClick={() => sortTrigger('choice')}>
 										Title{' '}
-										<SortIndicator sortBy={sortBy} sortDirection={sortDirection} thisIndex={0} />
+										<SortIndicator
+											sortBy={sortBy}
+											sortDirection={sortDirection}
+											thisIndex={'choice'}
+										/>
 									</th>
-									<th scope="col" className="py-3 px-6" onClick={() => sortTrigger(1)}>
+									<th scope="col" className="py-3 px-6" onClick={() => sortTrigger('score')}>
 										Total Votes{' '}
-										<SortIndicator sortBy={sortBy} sortDirection={sortDirection} thisIndex={1} />
+										<SortIndicator
+											sortBy={sortBy}
+											sortDirection={sortDirection}
+											thisIndex={'score'}
+										/>
 									</th>
-									<th scope="col" className="py-3 px-6" onClick={() => sortTrigger(2)}>
+									<th scope="col" className="py-3 px-6" onClick={() => sortTrigger('bribeUsd')}>
 										$ Bribes{' '}
-										<SortIndicator sortBy={sortBy} sortDirection={sortDirection} thisIndex={2} />
+										<SortIndicator
+											sortBy={sortBy}
+											sortDirection={sortDirection}
+											thisIndex={'bribeUsd'}
+										/>
 									</th>
-									<th scope="col" className="py-3 px-6" onClick={() => sortTrigger(3)}>
+									<th scope="col" className="py-3 px-6" onClick={() => sortTrigger('bribePerVote')}>
 										$/dxTETU{' '}
-										<SortIndicator sortBy={sortBy} sortDirection={sortDirection} thisIndex={3} />
+										<SortIndicator
+											sortBy={sortBy}
+											sortDirection={sortDirection}
+											thisIndex={'bribePerVote'}
+										/>
 									</th>
-									<th scope="col" className="py-3 px-6" onClick={() => sortTrigger(4)}>
+									<th scope="col" className="py-3 px-6" onClick={() => sortTrigger('emissionsValue')}>
 										Est. Emissions{' '}
-										<SortIndicator sortBy={sortBy} sortDirection={sortDirection} thisIndex={4} />
+										<SortIndicator
+											sortBy={sortBy}
+											sortDirection={sortDirection}
+											thisIndex={'emissionsValue'}
+										/>
 									</th>
-									<th scope="col" className="py-3 px-6" onClick={() => sortTrigger(5)}>
+									<th scope="col" className="py-3 px-6" onClick={() => sortTrigger('myVotes')}>
 										My Votes{' '}
-										<SortIndicator sortBy={sortBy} sortDirection={sortDirection} thisIndex={5} />
+										<SortIndicator
+											sortBy={sortBy}
+											sortDirection={sortDirection}
+											thisIndex={'myVotes'}
+										/>
 									</th>
-									<th scope="col" className="py-3 px-6" onClick={() => sortTrigger(6)}>
+									<th scope="col" className="py-3 px-6" onClick={() => sortTrigger('myBribes')}>
 										My Bribes{' '}
-										<SortIndicator sortBy={sortBy} sortDirection={sortDirection} thisIndex={6} />
+										<SortIndicator
+											sortBy={sortBy}
+											sortDirection={sortDirection}
+											thisIndex={'myBribes'}
+										/>
 									</th>
 								</tr>
 							</thead>
@@ -228,11 +287,11 @@ const TetuBal: FC = () => {
 												scope="row"
 												className="py-4 px-6 font-medium text-gray-900 whitespace-nowrap dark:text-white"
 											>
-												{td[0]}
+												{td.choice}
 												&nbsp;
 												<a
 													href={`https://etherscan.io/address/${
-														data.choicesToGaugeAddress[td[0]]
+														data.choicesToGaugeAddress[td.choice]
 													}`}
 													target="_blank"
 													rel="noreferrer"
@@ -240,15 +299,39 @@ const TetuBal: FC = () => {
 													<ArrowTopRightOnSquareIcon className="inline w-4 mb-1 text-slate-600" />
 												</a>
 											</th>
-											<td className="py-4 px-6">{BigNumber(td[1]).toFixed(2)}</td>
-											<td className="py-4 px-6">{td[2].gt(0) ? '$' + td[2].toFixed(0) : '-'}</td>
-											<td className="py-4 px-6">{td[3].gt(0) ? '$' + td[3].toFixed(2) : '-'}</td>
-											<td className="py-4 px-6">{td[4].gt(0) ? '$' + td[4].toFixed(2) : '-'}</td>
+											<td className="py-4 px-6">{BigNumber(td.score).toFixed(2)}</td>
 											<td className="py-4 px-6">
-												{td[5].gt(0) ? BigNumber(td[5]).toFixed(2) : '-'}
+												{td.hiddenHandBribeInfo ? (
+													<>
+														{td.bribeUsd.gt(0) ? '$' + td.bribeUsd.toFixed(0) : '-'}
+														&nbsp;
+														<div className="tooltip-wrapper">
+															<Tooltip
+																className="max-w-xs"
+																content="This bribe is from Hidden Hand and may fluctuate slightly. It will be liquidated on Ethereum and distributed as $BAL on Polygon."
+																placement="top"
+															>
+																<QuestionMarkCircleIcon className="inline w-4 text-slate-600" />
+															</Tooltip>
+														</div>
+													</>
+												) : (
+													<>{td.bribeUsd.gt(0) ? '$' + td.bribeUsd.toFixed(0) : '-'}</>
+												)}
 											</td>
 											<td className="py-4 px-6">
-												{td[6].gt(0) ? '$' + BigNumber(td[6]).toFixed(2) : '-'}
+												{td.bribePerVote.gt(0) ? '$' + td.bribePerVote.toFixed(2) : '-'}
+											</td>
+											<td className="py-4 px-6">
+												{!td.hiddenHandBribeInfo && td.emissionsValue.gt(0)
+													? '$' + td.emissionsValue.toFixed(2)
+													: '-'}
+											</td>
+											<td className="py-4 px-6">
+												{td.myVotes.gt(0) ? BigNumber(td.myVotes).toFixed(2) : '-'}
+											</td>
+											<td className="py-4 px-6">
+												{td.myBribes.gt(0) ? '$' + BigNumber(td.myBribes).toFixed(2) : '-'}
 											</td>
 										</tr>
 									)
@@ -264,41 +347,41 @@ const TetuBal: FC = () => {
 									</th>
 									<td className="py-4 px-6">
 										{tableData
-											.map(td => td[1])
+											.map(td => td.score)
 											.reduce((a, b) => a.plus(b), BigNumber(0))
 											.toFixed(2)}
 									</td>
 									<td className="py-4 px-6">
 										$
 										{tableData
-											.map(td => td[2])
+											.map(td => td.bribeUsd)
 											.reduce((a, b) => a.plus(b), BigNumber(0))
 											.toFixed(2)}
 									</td>
 									<td className="py-4 px-6">
 										$
 										{tableData
-											.map(td => td[3])
+											.map(td => td.bribePerVote)
 											.reduce((a, b) => a.plus(b), BigNumber(0))
 											.toFixed(2)}
 									</td>
 									<td className="py-4 px-6">
 										$
 										{tableData
-											.map(td => td[4])
+											.map(td => td.emissionsValue)
 											.reduce((a, b) => a.plus(b), BigNumber(0))
 											.toFixed(2)}
 									</td>
 									<td className="py-4 px-6">
 										{tableData
-											.map(td => td[5])
+											.map(td => td.myVotes)
 											.reduce((a, b) => a.plus(b), BigNumber(0))
 											.toFixed(2)}
 									</td>
 									<td className="py-4 px-6">
 										$
 										{tableData
-											.map(td => td[6])
+											.map(td => td.myBribes)
 											.reduce((a, b) => a.plus(b), BigNumber(0))
 											.toFixed(2)}
 									</td>
