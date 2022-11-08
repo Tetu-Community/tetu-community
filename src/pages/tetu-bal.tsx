@@ -102,7 +102,7 @@ const TetuBal: FC = () => {
 			const bribePerVoteTetu = tetuScore.gt(0) ? tetuBribeUsd.div(tetuScore) : BigNumber(0)
 
 			// count hidden hand bribes, divided by (submitted hh votes + pending tetu votes)
-			const bribePerVoteHH = hhBribeUsd.div(scoreTotal)
+			const bribePerVoteHH = scoreTotal.gt(0) ? hhBribeUsd.div(scoreTotal) : BigNumber(0)
 			const bribePerVoteTotal = bribePerVoteTetu.plus(bribePerVoteHH)
 			const myVotes = myVoteChoicesToVp[choice] || BigNumber(0)
 			const myBribes = bribePerVoteTotal.times(myVotes)
