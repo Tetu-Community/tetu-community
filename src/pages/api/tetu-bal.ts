@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { mainnetProvider, polygonProvider } from '@/lib/ethers'
-import { CURRENT_SNAPSHOT_PROPOSAL_ID } from '@/lib/consts'
+import { CURRENT_SNAPSHOT_PROPOSAL_ID, CURRENT_HH_BALANCER_DEADLINE } from '@/lib/consts'
 
 import {
 	getCoingeckoPrice,
@@ -21,7 +21,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 			getSnapshotData(CURRENT_SNAPSHOT_PROPOSAL_ID),
 			getBribeData(polygonProvider, CURRENT_SNAPSHOT_PROPOSAL_ID),
 			getAllGaugeAddresses(),
-			getHiddenHandData(),
+			getHiddenHandData(CURRENT_HH_BALANCER_DEADLINE),
 		])
 
 	const choicesToGaugeAddress = {}

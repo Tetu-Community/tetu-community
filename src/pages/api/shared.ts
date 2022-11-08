@@ -3,12 +3,7 @@ import { request, gql } from 'graphql-request'
 import BigNumber from 'bignumber.js'
 import { Contract } from '@ethersproject/contracts'
 import ms from 'ms'
-import {
-	TETUBAL_BRIBE_VAULT_ADDRESS,
-	TETU_LIQUIDATOR_ADDRESS,
-	USDC_ADDRESS,
-	CURRENT_HH_BALANCER_DEADLINE,
-} from '@/lib/consts'
+import { TETUBAL_BRIBE_VAULT_ADDRESS, TETU_LIQUIDATOR_ADDRESS, USDC_ADDRESS } from '@/lib/consts'
 import { keccak256 } from '@ethersproject/keccak256'
 const SNAPSHOT_GRAPHQL_ENDPOINT = 'https://hub.snapshot.org/graphql'
 
@@ -174,7 +169,7 @@ export async function getBribeData(provider: any, proposalId: string): Promise<a
 	})
 }
 
-export async function getHiddenHandData() {
-	const res = await axios.get(`https://hhand.xyz/proposal/balancer/${CURRENT_HH_BALANCER_DEADLINE}`)
+export async function getHiddenHandData(deadline) {
+	const res = await axios.get(`https://hhand.xyz/proposal/balancer/${deadline}`)
 	return res.data.data
 }
