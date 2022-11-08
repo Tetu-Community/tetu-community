@@ -14,7 +14,7 @@ import {
 } from '@heroicons/react/24/solid'
 import { useAccount } from 'wagmi'
 import Countdown from 'react-countdown'
-import { Tooltip } from 'flowbite-react'
+import { Tooltip, ToggleSwitch } from 'flowbite-react'
 import { BAL_EMISSIONS_PER_WEEK } from '@/lib/consts'
 
 const TetuBal: FC = () => {
@@ -22,6 +22,7 @@ const TetuBal: FC = () => {
 	const [sortBy, setSortBy] = useState('scoreTotal')
 	const [sortDirection, setSortDirection] = useState('desc')
 	const [showBribeModal, setShowBribeModal] = useState(false)
+	const [hideHiddenHandData, setHideHiddenHandData] = useState(false)
 
 	function updateSort(newSortBy) {
 		if (sortBy === newSortBy) {
@@ -94,16 +95,16 @@ const TetuBal: FC = () => {
 				break
 			}
 
-			const scoreTotal = tetuScore.plus(hhScore)
+			const scoreTotal = hideHiddenHandData ? tetuScore : tetuScore.plus(hhScore)
 
-			const totalBribeUsd = tetuBribeUsd.plus(hhBribeUsd)
+			const totalBribeUsd = hideHiddenHandData ? tetuBribeUsd : tetuBribeUsd.plus(hhBribeUsd)
 
 			// count tetu bribes divided by the number of tetu votes
 			const bribePerVoteTetu = tetuScore.gt(0) ? tetuBribeUsd.div(tetuScore) : BigNumber(0)
 
 			// count hidden hand bribes, divided by (submitted hh votes + pending tetu votes)
 			const bribePerVoteHH = scoreTotal.gt(0) ? hhBribeUsd.div(scoreTotal) : BigNumber(0)
-			const bribePerVoteTotal = bribePerVoteTetu.plus(bribePerVoteHH)
+			const bribePerVoteTotal = hideHiddenHandData ? bribePerVoteTetu : bribePerVoteTetu.plus(bribePerVoteHH)
 			const myVotes = myVoteChoicesToVp[choice] || BigNumber(0)
 			const myBribes = bribePerVoteTotal.times(myVotes)
 
@@ -180,32 +181,44 @@ const TetuBal: FC = () => {
 							</div>
 						</div>
 					</div>
-					<h3 className="text-sm text-slate-400">
-						<a href={snapshotUrl} target="_blank" rel="noreferrer">
-							Vote on Snapshot.org &nbsp;
-							<InboxArrowDownIcon className="inline w-4 mb-1" />
-						</a>
-						{isConnected ? (
-							<span
-								className="ml-4 underline hover:no-underline cursor-pointer"
-								onClick={() => setShowBribeModal(true)}
-							>
-								Add a bribe &nbsp;
-								<BanknotesIcon className="inline w-4 mb-1" />
-							</span>
-						) : (
-							<span className="ml-4 cursor-pointer text-slate-600 tooltip-wrapper">
-								<Tooltip content="You must connect your wallet to add a bribe" placement="top">
+					<div className="flex justify-between">
+						<h3 className="text-sm text-slate-400">
+							<a href={snapshotUrl} target="_blank" rel="noreferrer">
+								Vote on Snapshot.org &nbsp;
+								<InboxArrowDownIcon className="inline w-4 mb-1" />
+							</a>
+							{isConnected ? (
+								<span
+									className="ml-4 underline hover:no-underline cursor-pointer"
+									onClick={() => setShowBribeModal(true)}
+								>
 									Add a bribe &nbsp;
 									<BanknotesIcon className="inline w-4 mb-1" />
-								</Tooltip>
-							</span>
-						)}
-						<a href="https://hiddenhand.finance/balancer" className="ml-4" target="_blank" rel="noreferrer">
-							View on Hidden Hand &nbsp;
-							<ArrowTopRightOnSquareIcon className="inline w-4 mb-1" />
-						</a>
-					</h3>
+								</span>
+							) : (
+								<span className="ml-4 cursor-pointer text-slate-600 tooltip-wrapper">
+									<Tooltip content="You must connect your wallet to add a bribe" placement="top">
+										Add a bribe &nbsp;
+										<BanknotesIcon className="inline w-4 mb-1" />
+									</Tooltip>
+								</span>
+							)}
+							<a
+								href="https://hiddenhand.finance/balancer"
+								className="ml-4"
+								target="_blank"
+								rel="noreferrer"
+							>
+								View on Hidden Hand &nbsp;
+								<ArrowTopRightOnSquareIcon className="inline w-4 mb-1" />
+							</a>
+						</h3>
+						<ToggleSwitch
+							checked={hideHiddenHandData}
+							label="Hide data from Hidden Hand"
+							onChange={v => setHideHiddenHandData(v)}
+						/>
+					</div>
 
 					<div className="overflow-x-auto relative pt-4">
 						<table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
@@ -288,7 +301,7 @@ const TetuBal: FC = () => {
 											<td className="py-4 px-6">{BigNumber(td.scoreTotal).toFixed(2)}</td>
 											<td className="py-4 px-6">
 												{td.totalBribeUsd.gt(0) ? '$' + td.totalBribeUsd.toFixed(0) : '-'}
-												{td.hhBribeUsd.gt(0) ? (
+												{!hideHiddenHandData && td.hhBribeUsd.gt(0) ? (
 													<>
 														&nbsp;
 														<div className="tooltip-wrapper">
@@ -312,7 +325,7 @@ const TetuBal: FC = () => {
 													? '$' + td.bribePerVoteTotal.toFixed(2)
 													: '-'}
 
-												{td.bribePerVoteHH.gt(0) ? (
+												{!hideHiddenHandData && td.bribePerVoteHH.gt(0) ? (
 													<>
 														&nbsp;
 														<div className="tooltip-wrapper">
