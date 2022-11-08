@@ -9,11 +9,11 @@ import {
 	getTotalSupply,
 	getAllGaugeAddresses,
 	getBribeData,
-	getHiddenHandBribeData,
+	getHiddenHandData,
 } from './shared'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-	const [balPrice, tetuBalTotalSupply, veBalTotalSupply, snapshotData, bribes, allGaugeAddresses, hiddenHandBribes] =
+	const [balPrice, tetuBalTotalSupply, veBalTotalSupply, snapshotData, bribes, allGaugeAddresses, hiddenHandData] =
 		await Promise.all([
 			getCoingeckoPrice('balancer'),
 			getTotalSupply(polygonProvider, '0x7fC9E0Aa043787BFad28e29632AdA302C790Ce33'),
@@ -21,7 +21,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 			getSnapshotData(CURRENT_SNAPSHOT_PROPOSAL_ID),
 			getBribeData(polygonProvider, CURRENT_SNAPSHOT_PROPOSAL_ID),
 			getAllGaugeAddresses(),
-			getHiddenHandBribeData(),
+			getHiddenHandData(),
 		])
 
 	const choicesToGaugeAddress = {}
@@ -39,7 +39,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 		snapshotData,
 		bribes,
 		choicesToGaugeAddress,
-		hiddenHandBribes,
+		hiddenHandData,
 	})
 }
 

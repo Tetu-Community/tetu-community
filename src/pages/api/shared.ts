@@ -3,7 +3,12 @@ import { request, gql } from 'graphql-request'
 import BigNumber from 'bignumber.js'
 import { Contract } from '@ethersproject/contracts'
 import ms from 'ms'
-import { TETUBAL_BRIBE_VAULT_ADDRESS, TETU_LIQUIDATOR_ADDRESS, USDC_ADDRESS } from '@/lib/consts'
+import {
+	TETUBAL_BRIBE_VAULT_ADDRESS,
+	TETU_LIQUIDATOR_ADDRESS,
+	USDC_ADDRESS,
+	CURRENT_HH_BALANCER_DEADLINE,
+} from '@/lib/consts'
 import { keccak256 } from '@ethersproject/keccak256'
 const SNAPSHOT_GRAPHQL_ENDPOINT = 'https://hub.snapshot.org/graphql'
 
@@ -169,24 +174,7 @@ export async function getBribeData(provider: any, proposalId: string): Promise<a
 	})
 }
 
-export async function getHiddenHandBribeData() {
-	// TODO: dynamically grab this URL
-	const res = await axios.get('https://hiddenhand.finance/_next/data/SE1CxiBzgGk69sCJJhwEQ/balancer.json')
-
-	const ret = {
-		totalVote: BigNumber(res.data.pageProps.partnerSettingsData.totalVote),
-		currentVote: BigNumber(0),
-		bribes: {},
-	}
-
-	for (const p of res.data.pageProps.proposalsData) {
-		ret.currentVote = ret.currentVote.plus(p.voteCount)
-		if (p.totalValue === 0) continue
-		ret.bribes[p.proposal] = {
-			value: p.totalValue,
-			votes: p.voteCount,
-		}
-	}
-
-	return ret
+export async function getHiddenHandData() {
+	const res = await axios.get(`https://hhand.xyz/proposal/balancer/${CURRENT_HH_BALANCER_DEADLINE}`)
+	return res.data.data
 }
