@@ -49,9 +49,12 @@ const TetuBal: FC = () => {
 
 		// Calculate total bribes (Tetu and HH)
 		for (const b of data.bribes) totalBribes = totalBribes.plus(BigNumber(b.amountUsdc).shiftedBy(-6))
-		for (const proposal of data.hiddenHandData) {
-			for (const b of proposal.bribes) {
-				totalBribes = totalBribes.plus(b.value)
+
+		if (!hideHiddenHandData) {
+			for (const proposal of data.hiddenHandData) {
+				for (const b of proposal.bribes) {
+					totalBribes = totalBribes.plus(b.value)
+				}
 			}
 		}
 
@@ -157,7 +160,10 @@ const TetuBal: FC = () => {
 				<InfoBubble loading={!data} title="Emissions per veBAL (weekly)">
 					${emissionsPerVeBalUsd.toFixed(2)}
 				</InfoBubble>
-				<InfoBubble loading={!data} title="Total Bribes (incl. Hidden Hand)">
+				<InfoBubble
+					loading={!data}
+					title={hideHiddenHandData ? 'Total Bribes (Tetu only)' : 'Total Bribes (incl. Hidden Hand)'}
+				>
 					${totalBribes ? totalBribes.toFixed(2) : '-'}
 				</InfoBubble>
 			</div>
