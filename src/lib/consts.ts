@@ -1,8 +1,8 @@
 export const APP_NAME = 'Tetu.Community'
 
 // these will change each round:
-export const CURRENT_SNAPSHOT_PROPOSAL_ID = '0x0d8a15d945f8d4e46fdab28bbf39e38f43cbcb5aed5c42d7025305bfa9d94bcc'
-export const CURRENT_HH_BALANCER_DEADLINE = 1668038400
+export const CURRENT_SNAPSHOT_PROPOSAL_ID = '0xe5e1197c422f9f5d879b5cb7c5f641c64594ce2f98f830ddd2c8542df0611f11'
+export const CURRENT_HH_BALANCER_DEADLINE = 0
 export const BAL_EMISSIONS_PER_WEEK = 145000
 
 // addresses, etc, should not change:

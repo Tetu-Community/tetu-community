@@ -78,7 +78,7 @@ const TetuBal: FC = () => {
 		// calculate table data
 		for (const i in data.snapshotData.proposal.choices) {
 			const choice = data.snapshotData.proposal.choices[i]
-			const tetuScore = BigNumber(data.snapshotData.proposal.scores[i])
+			const tetuScore = BigNumber(data.snapshotData.proposal.scores[i] || 0)
 			let hhScore = BigNumber(0)
 			const gaugeAddressPrefix = choice.split('0x')[1].split(')')[0].toLowerCase()
 
