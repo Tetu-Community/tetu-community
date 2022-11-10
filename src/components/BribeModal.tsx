@@ -6,7 +6,7 @@ import { useAccount, useProvider, erc20ABI, useSigner } from 'wagmi'
 import { Contract } from '@ethersproject/contracts'
 import {
 	TETUBAL_BRIBE_VAULT_ADDRESS,
-	CURRENT_SNAPSHOT_PROPOSAL_ID,
+	CURRENT_SNAPSHOT_PROPOSAL_ID_OVERRIDE_FOR_FUCKUP,
 	TETU_LIQUIDATOR_ADDRESS,
 	USDC_ADDRESS,
 } from '@/lib/consts'
@@ -117,7 +117,7 @@ const BribeModal: FC<{ show: boolean; onClose: Function; choicesToGaugeAddress: 
 				const tx = await bribeVaultContract
 					.connect(signer)
 					.createBribe(
-						keccak256(CURRENT_SNAPSHOT_PROPOSAL_ID),
+						keccak256(CURRENT_SNAPSHOT_PROPOSAL_ID_OVERRIDE_FOR_FUCKUP),
 						gaugeAddress,
 						tokenAddressRaw,
 						bribeAmountParsed
