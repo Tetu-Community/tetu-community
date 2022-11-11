@@ -17,6 +17,16 @@ import Countdown from 'react-countdown'
 import { Tooltip, ToggleSwitch } from 'flowbite-react'
 import { BAL_EMISSIONS_PER_WEEK } from '@/lib/consts'
 
+function tetuBribesToTooltipString(tetuBribes) {
+	return tetuBribes
+		.map(b => {
+			return `${BigNumber(b.amount)
+				.shiftedBy(0 - b.tokenDecimals)
+				.toFixed()} ${b.tokenSymbol}`
+		})
+		.join(', ')
+}
+
 const TetuBal: FC = () => {
 	const { isConnected, address } = useAccount()
 	const [sortBy, setSortBy] = useState('scoreTotal')
@@ -124,6 +134,7 @@ const TetuBal: FC = () => {
 				bribePerVoteTotal,
 				myVotes,
 				myBribes,
+				matchingBribes,
 			})
 		}
 	}
@@ -319,6 +330,22 @@ const TetuBal: FC = () => {
 																placement="top"
 															>
 																<QuestionMarkCircleIcon className="inline w-4 text-slate-600" />
+															</Tooltip>
+														</div>
+													</>
+												) : (
+													''
+												)}
+												{td.matchingBribes.length > 0 ? (
+													<>
+														&nbsp;
+														<div className="tooltip-wrapper">
+															<Tooltip
+																className="max-w-s"
+																content={tetuBribesToTooltipString(td.matchingBribes)}
+																placement="top"
+															>
+																<BanknotesIcon className="inline w-4 text-slate-600" />
 															</Tooltip>
 														</div>
 													</>

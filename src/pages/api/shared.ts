@@ -5,6 +5,7 @@ import { Contract } from '@ethersproject/contracts'
 import ms from 'ms'
 import { TETUBAL_BRIBE_VAULT_ADDRESS, TETU_LIQUIDATOR_ADDRESS, USDC_ADDRESS } from '@/lib/consts'
 import { keccak256 } from '@ethersproject/keccak256'
+import { erc20ABI } from 'wagmi'
 const SNAPSHOT_GRAPHQL_ENDPOINT = 'https://hub.snapshot.org/graphql'
 
 export async function getCoingeckoPrice(id: string): Promise<BigNumber> {
@@ -151,10 +152,20 @@ export async function getBribeData(provider: any, proposalId: string): Promise<a
 
 	await Promise.all(
 		retBribes.map(async function (b, i) {
+			const tokenContract = new Contract(b.token, erc20ABI, provider)
+
 			try {
-				retBribes[i].amountUsdc = await tetuLiquidator.getPrice(b.token, USDC_ADDRESS, b.amount)
+				const [tokenSymbol, tokenDecimals, amountUsdc] = await Promise.all([
+					tokenContract.symbol(),
+					tokenContract.decimals(),
+					tetuLiquidator.getPrice(b.token, USDC_ADDRESS, b.amount),
+				])
+
+				retBribes[i].tokenSymbol = tokenSymbol
+				retBribes[i].tokenDecimals = tokenDecimals
+				retBribes[i].amountUsdc = amountUsdc
 			} catch (err) {
-				// nada
+				console.log('error', err)
 			}
 		})
 	)
