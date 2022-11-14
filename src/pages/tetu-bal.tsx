@@ -364,7 +364,7 @@ const TetuBal: FC = () => {
 														<div className="tooltip-wrapper">
 															<Tooltip
 																className="max-w-s"
-																content={`Tetu $/dxTETU: $${td.bribePerVoteTetu.toFixed(
+																content={`Tetu $/tetuBalPower: $${td.bribePerVoteTetu.toFixed(
 																	2
 																)}, Hidden Hand $/veBAL: $${td.bribePerVoteHH.toFixed(
 																	2
