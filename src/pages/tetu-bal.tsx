@@ -15,7 +15,8 @@ import {
 import { useAccount } from 'wagmi'
 import Countdown from 'react-countdown'
 import { Tooltip, ToggleSwitch } from 'flowbite-react'
-import { BAL_EMISSIONS_PER_WEEK } from '@/lib/consts'
+import { BAL_EMISSIONS_PER_WEEK, GAUGE_TYPES_TO_CHAIN_NAME } from '@/lib/consts'
+import { getCurrentTetuVeBALGaugeVotes } from '@/pages/api/shared'
 
 function tetuBribesToTooltipString(tetuBribes) {
 	return tetuBribes
@@ -27,7 +28,7 @@ function tetuBribesToTooltipString(tetuBribes) {
 		.join(', ')
 }
 
-const TetuBal: FC = () => {
+const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 	const { isConnected, address } = useAccount()
 	const [sortBy, setSortBy] = useState('scoreTotal')
 	const [sortDirection, setSortDirection] = useState('desc')
@@ -102,6 +103,13 @@ const TetuBal: FC = () => {
 			for (const proposal of data.hiddenHandData) {
 				if (!proposal.proposal.toLowerCase().includes(gaugeAddressPrefix)) continue
 				hhScore = BigNumber(proposal.voteCount)
+
+				// remove old tetu vote from hhSocre
+				const foundOldTetuVotePercent = existingTetuVotes[proposal.proposal]
+				if (foundOldTetuVotePercent) {
+					hhScore = hhScore.minus(BigNumber(data.tetuBalTotalSupply).times(foundOldTetuVotePercent))
+				}
+
 				for (const b of proposal.bribes) {
 					hhBribeUsd = hhBribeUsd.plus(b.value)
 				}
@@ -121,6 +129,8 @@ const TetuBal: FC = () => {
 			const myVotes = myVoteChoicesToVp[choice] || BigNumber(0)
 			const myBribes = bribePerVoteTotal.times(myVotes)
 
+			const chain = GAUGE_TYPES_TO_CHAIN_NAME[data.choicesToGaugeTypes[choice]]
+
 			tableData.push({
 				choice,
 				tetuScore,
@@ -135,6 +145,7 @@ const TetuBal: FC = () => {
 				myVotes,
 				myBribes,
 				matchingBribes,
+				chain,
 			})
 		}
 	}
@@ -150,7 +161,7 @@ const TetuBal: FC = () => {
 	if (sortDirection === 'asc') tableData.reverse()
 
 	return (
-		<div className="max-w-5xl mx-auto px-6 pt-4">
+		<div className="max-w-6xl mx-auto px-6 pt-4">
 			<div className="text-justify">
 				<p>
 					TetuBal is the liquid-staking wrapper for{' '}
@@ -249,6 +260,14 @@ const TetuBal: FC = () => {
 											thisIndex={'choice'}
 										/>
 									</th>
+									<th scope="col" className="py-3 px-6" onClick={() => updateSort('chain')}>
+										Chain{' '}
+										<SortIndicator
+											sortBy={sortBy}
+											sortDirection={sortDirection}
+											thisIndex={'chain'}
+										/>
+									</th>
 									<th scope="col" className="py-3 px-6" onClick={() => updateSort('scoreTotal')}>
 										Total Votes{' '}
 										<SortIndicator
@@ -315,6 +334,7 @@ const TetuBal: FC = () => {
 													<ArrowTopRightOnSquareIcon className="inline w-4 mb-1 text-slate-600" />
 												</a>
 											</th>
+											<td className="py-4 px-6">{td.chain}</td>
 											<td className="py-4 px-6">{BigNumber(td.scoreTotal).toFixed(2)}</td>
 											<td className="py-4 px-6">
 												{td.totalBribeUsd.gt(0) ? '$' + td.totalBribeUsd.toFixed(0) : '-'}
@@ -403,6 +423,7 @@ const TetuBal: FC = () => {
 											.reduce((a, b) => a.plus(b), BigNumber(0))
 											.toFixed(2)}
 									</td>
+									<td className="py-4 px-6"></td>
 									<td className="py-4 px-6">
 										$
 										{tableData
@@ -440,6 +461,15 @@ const TetuBal: FC = () => {
 			)}
 		</div>
 	)
+}
+
+export async function getStaticProps() {
+	return {
+		props: {
+			existingTetuVotes: await getCurrentTetuVeBALGaugeVotes(),
+		},
+		revalidate: 6 * 60 * 60, // 6 hours
+	}
 }
 
 export default TetuBal

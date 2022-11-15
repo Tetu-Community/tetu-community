@@ -11,29 +11,33 @@ import {
 	getCoingeckoPrice,
 	getSnapshotData,
 	getTotalSupply,
-	getAllGaugeAddresses,
+	getAllGaugesFromSubgraph,
 	getBribeData,
 	getHiddenHandData,
 } from './shared'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-	const [balPrice, tetuBalTotalSupply, veBalTotalSupply, snapshotData, bribes, allGaugeAddresses, hiddenHandData] =
+	const [balPrice, tetuBalTotalSupply, veBalTotalSupply, snapshotData, bribes, allGauges, hiddenHandData] =
 		await Promise.all([
 			getCoingeckoPrice('balancer'),
 			getTotalSupply(polygonProvider, '0x7fC9E0Aa043787BFad28e29632AdA302C790Ce33'),
 			getTotalSupply(mainnetProvider, '0xC128a9954e6c874eA3d62ce62B468bA073093F25'),
 			getSnapshotData(CURRENT_SNAPSHOT_PROPOSAL_ID),
 			getBribeData(polygonProvider, CURRENT_SNAPSHOT_PROPOSAL_ID_OVERRIDE_FOR_FUCKUP),
-			getAllGaugeAddresses(),
+			getAllGaugesFromSubgraph(),
 			getHiddenHandData(CURRENT_HH_BALANCER_DEADLINE),
 		])
 
 	const choicesToGaugeAddress = {}
+	const choicesToGaugeTypes = {}
 
 	for (const choice of snapshotData.proposal.choices) {
 		const prefix = choice.split('0x')[1].split(')')[0]
-		const found = allGaugeAddresses.find(a => a.startsWith('0x' + prefix))
-		if (found) choicesToGaugeAddress[choice] = found
+		const found = allGauges.find(g => g.address.startsWith('0x' + prefix))
+		if (found) {
+			choicesToGaugeAddress[choice] = found.address
+			choicesToGaugeTypes[choice] = found.gaugeType
+		}
 	}
 
 	res.status(200).json({
@@ -43,6 +47,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 		snapshotData,
 		bribes,
 		choicesToGaugeAddress,
+		choicesToGaugeTypes,
 		hiddenHandData,
 	})
 }

@@ -3,9 +3,19 @@ import { request, gql } from 'graphql-request'
 import BigNumber from 'bignumber.js'
 import { Contract } from '@ethersproject/contracts'
 import ms from 'ms'
-import { TETUBAL_BRIBE_VAULT_ADDRESS, TETU_LIQUIDATOR_ADDRESS, USDC_ADDRESS } from '@/lib/consts'
+import {
+	TETUBAL_BRIBE_VAULT_ADDRESS,
+	TETU_LIQUIDATOR_ADDRESS,
+	USDC_ADDRESS,
+	BAL_GAUGE_CONTROLLER_ADDRESS,
+	TETU_BAL_LOCKER_ADDRESS,
+} from '@/lib/consts'
 import { keccak256 } from '@ethersproject/keccak256'
 import { erc20ABI } from 'wagmi'
+import { mainnetProvider } from '@/lib/ethers'
+import gaugeControllerAbi from '@/abi/GaugeController.json'
+import range from 'lodash.range'
+
 const SNAPSHOT_GRAPHQL_ENDPOINT = 'https://hub.snapshot.org/graphql'
 
 export async function getCoingeckoPrice(id: string): Promise<BigNumber> {
@@ -115,19 +125,27 @@ export async function getSnapshotData(proposalId: string): Promise<any> {
 	}
 }
 
-export async function getAllGaugeAddresses(): Promise<any> {
+export async function getAllGaugesFromSubgraph(): Promise<any> {
 	const resp = await request(
 		'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-gauges',
 		gql`
 			query {
 				gauges(first: 1000) {
 					address
+					type {
+						id
+					}
 				}
 			}
 		`
 	)
 
-	return resp.gauges.map(g => g.address)
+	return resp.gauges.map(g => {
+		return {
+			address: g.address,
+			gaugeType: g.type.id,
+		}
+	})
 }
 
 export async function getBribeData(provider: any, proposalId: string): Promise<any> {
@@ -183,4 +201,32 @@ export async function getBribeData(provider: any, proposalId: string): Promise<a
 export async function getHiddenHandData(deadline) {
 	const res = await axios.get(`https://hhand.xyz/proposal/balancer/${deadline}`)
 	return res.data.data
+}
+
+export async function getCurrentTetuVeBALGaugeVotes() {
+	const c = new Contract(BAL_GAUGE_CONTROLLER_ADDRESS, gaugeControllerAbi, mainnetProvider)
+
+	// get all gauge addresses
+	const gaugeAddresses = (await getAllGaugesFromSubgraph()).map(g => g.address)
+
+	// get the "power" from the slope
+	const powers: { [key: string]: BigNumber } = {}
+	await Promise.all(
+		gaugeAddresses.map(async function (gaugeAddress) {
+			const res = await c.vote_user_slopes(TETU_BAL_LOCKER_ADDRESS, gaugeAddress)
+			if (res.power.eq(0)) return
+			powers[gaugeAddress] = BigNumber(res.power.toString())
+		})
+	)
+
+	// get the total power (this might always be 10,000, but we should still calculate it?)
+	const sumPower = BigNumber.sum(...Object.values(powers))
+
+	// calculate the percent of the Tetu vote for each gauge
+	const percents = {}
+	for (const [gaugeAddress, power] of Object.entries(powers)) {
+		percents[gaugeAddress] = power.div(sumPower).toFixed()
+	}
+
+	return percents
 }
