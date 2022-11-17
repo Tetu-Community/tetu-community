@@ -13,3 +13,7 @@ a:hover, li.active a {
 .tooltip-wrapper svg {
   margin-top: -2px;
 }
+
+.dropdown-wrapper, .dropdown-wrapper .w-fit, .dropdown-wrapper button {
+  display: inline;
+}

@@ -14,8 +14,8 @@ import {
 } from '@heroicons/react/24/solid'
 import { useAccount } from 'wagmi'
 import Countdown from 'react-countdown'
-import { Tooltip, ToggleSwitch } from 'flowbite-react'
-import { BAL_EMISSIONS_PER_WEEK, GAUGE_TYPES_TO_CHAIN_NAME } from '@/lib/consts'
+import { Tooltip, ToggleSwitch, Dropdown } from 'flowbite-react'
+import { ROUNDS, BAL_EMISSIONS_PER_WEEK, GAUGE_TYPES_TO_CHAIN_NAME } from '@/lib/consts'
 import { getCurrentTetuVeBALGaugeVotes } from '@/pages/api/shared'
 
 function tetuBribesToTooltipString(tetuBribes) {
@@ -30,6 +30,7 @@ function tetuBribesToTooltipString(tetuBribes) {
 
 const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 	const { isConnected, address } = useAccount()
+	const [roundNum, setRoundNum] = useState(ROUNDS[0].number)
 	const [sortBy, setSortBy] = useState('scoreTotal')
 	const [sortDirection, setSortDirection] = useState('desc')
 	const [showBribeModal, setShowBribeModal] = useState(false)
@@ -44,7 +45,7 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 		}
 	}
 
-	const { data, error, mutate } = useSWR('/api/tetu-bal', fetcher)
+	const { data, error, mutate } = useSWR(`/api/tetu-bal?n=${roundNum}`, fetcher)
 
 	const snapshotUrl = data
 		? `https://snapshot.org/#/${data.snapshotData.proposal.space.id}/proposal/${data.snapshotData.proposal.id}`
@@ -201,7 +202,21 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 						}}
 					/>
 					<div className="flex justify-between">
-						<h2 className="text-2xl pb-2">{data.snapshotData.proposal.title}</h2>
+						<h2 className="text-2xl pb-2">
+							{data.snapshotData.proposal.title}
+							<div className="dropdown-wrapper">
+								<Dropdown label="" inline={true}>
+									{ROUNDS.map(function (r) {
+										if (r.number === roundNum) return
+										return (
+											<Dropdown.Item key={r.number} onClick={() => setRoundNum(r.number)}>
+												{r.title}
+											</Dropdown.Item>
+										)
+									})}
+								</Dropdown>
+							</div>
+						</h2>
 						<div className="pt-1">
 							Time remaining to vote: &nbsp;
 							<div className="inline p-2 rounded-md bg-slate-800 font-mono">

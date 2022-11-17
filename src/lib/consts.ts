@@ -1,10 +1,24 @@
 export const APP_NAME = 'Tetu.Community'
 
 // these will change each round:
-export const CURRENT_SNAPSHOT_PROPOSAL_ID = '0xbf7cae30a9b8b2a56a11b767d58a623811ee7c9220069ad689a855a0d0006f03'
-export const CURRENT_SNAPSHOT_PROPOSAL_ID_OVERRIDE_FOR_FUCKUP =
-	'0xe5e1197c422f9f5d879b5cb7c5f641c64594ce2f98f830ddd2c8542df0611f11'
-export const CURRENT_HH_BALANCER_DEADLINE = 1668643200
+export const ROUNDS = [
+	{
+		number: 7,
+		title: 'BRV-007: Gauge Weight for Week of 10th November 2022',
+		proposalId: '0xbf7cae30a9b8b2a56a11b767d58a623811ee7c9220069ad689a855a0d0006f03',
+		bribeProposalId: '0xe5e1197c422f9f5d879b5cb7c5f641c64594ce2f98f830ddd2c8542df0611f11', // for fuckup
+		hhBalancerDeadline: 1668643200,
+	},
+	{
+		number: 6,
+		title: 'BRV-006: Gauge Weight for Week of ??? November 2022',
+		proposalId: '0xbf7cae30a9b8b2a56a11b767d58a623811ee7c9220069ad689a855a0d0006f03',
+		bribeProposalId: '0xe5e1197c422f9f5d879b5cb7c5f641c64594ce2f98f830ddd2c8542df0611f11', // for fuckup
+		hhBalancerDeadline: 1667433600,
+	},
+]
+
+// changes every year?
 export const BAL_EMISSIONS_PER_WEEK = 145000
 
 // addresses, etc, should not change:

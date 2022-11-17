@@ -1,11 +1,7 @@
 import BigNumber from 'bignumber.js'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { mainnetProvider, polygonProvider } from '@/lib/ethers'
-import {
-	CURRENT_SNAPSHOT_PROPOSAL_ID,
-	CURRENT_SNAPSHOT_PROPOSAL_ID_OVERRIDE_FOR_FUCKUP,
-	CURRENT_HH_BALANCER_DEADLINE,
-} from '@/lib/consts'
+import { ROUNDS } from '@/lib/consts'
 
 import {
 	getCoingeckoPrice,
@@ -17,15 +13,18 @@ import {
 } from './shared'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
+	const roundData = ROUNDS.find(r => r.number === parseInt(req.query.n.toString()))
+	if (!roundData) return res.send(404)
+
 	const [balPrice, tetuBalTotalSupply, veBalTotalSupply, snapshotData, bribes, allGauges, hiddenHandData] =
 		await Promise.all([
 			getCoingeckoPrice('balancer'),
 			getTotalSupply(polygonProvider, '0x7fC9E0Aa043787BFad28e29632AdA302C790Ce33'),
 			getTotalSupply(mainnetProvider, '0xC128a9954e6c874eA3d62ce62B468bA073093F25'),
-			getSnapshotData(CURRENT_SNAPSHOT_PROPOSAL_ID),
-			getBribeData(polygonProvider, CURRENT_SNAPSHOT_PROPOSAL_ID_OVERRIDE_FOR_FUCKUP),
+			getSnapshotData(roundData.proposalId),
+			getBribeData(polygonProvider, roundData.bribeProposalId),
 			getAllGaugesFromSubgraph(),
-			getHiddenHandData(CURRENT_HH_BALANCER_DEADLINE),
+			getHiddenHandData(roundData.hhBalancerDeadline),
 		])
 
 	const choicesToGaugeAddress = {}
