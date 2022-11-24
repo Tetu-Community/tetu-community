@@ -7,8 +7,7 @@ export const ROUNDS = [
 		title: 'BRV-008: Gauge Weight for Week of 24th November 2022',
 		proposalId: '0x95093caa89673ccc16788dfa2ddf3ce5ea2a86eb82fc3d8185da691803657e08',
 		bribeProposalId: '0x95093caa89673ccc16788dfa2ddf3ce5ea2a86eb82fc3d8185da691803657e08', // for fuckup
-		hhBalancerDeadline: 1668643200, // TODO
-		// hhBalancerDeadline: 1669852800, // TODO
+		hhBalancerDeadline: 1669852800,
 	},
 	{
 		number: 7,
