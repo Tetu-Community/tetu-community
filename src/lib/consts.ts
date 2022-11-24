@@ -3,18 +3,19 @@ export const APP_NAME = 'Tetu.Community'
 // these will change each round:
 export const ROUNDS = [
 	{
+		number: 8,
+		title: 'BRV-008: Gauge Weight for Week of 24th November 2022',
+		proposalId: '0x95093caa89673ccc16788dfa2ddf3ce5ea2a86eb82fc3d8185da691803657e08',
+		bribeProposalId: '0x95093caa89673ccc16788dfa2ddf3ce5ea2a86eb82fc3d8185da691803657e08', // for fuckup
+		hhBalancerDeadline: 1668643200, // TODO
+		// hhBalancerDeadline: 1669852800, // TODO
+	},
+	{
 		number: 7,
 		title: 'BRV-007: Gauge Weight for Week of 10th November 2022',
 		proposalId: '0xbf7cae30a9b8b2a56a11b767d58a623811ee7c9220069ad689a855a0d0006f03',
 		bribeProposalId: '0xe5e1197c422f9f5d879b5cb7c5f641c64594ce2f98f830ddd2c8542df0611f11', // for fuckup
 		hhBalancerDeadline: 1668643200,
-	},
-	{
-		number: 6,
-		title: 'BRV-006: Gauge Weight for Week of ??? November 2022',
-		proposalId: '0xbf7cae30a9b8b2a56a11b767d58a623811ee7c9220069ad689a855a0d0006f03',
-		bribeProposalId: '0xe5e1197c422f9f5d879b5cb7c5f641c64594ce2f98f830ddd2c8542df0611f11', // for fuckup
-		hhBalancerDeadline: 1667433600,
 	},
 ]
 
