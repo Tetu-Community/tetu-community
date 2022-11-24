@@ -4,12 +4,7 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { parseUnits, formatUnits } from '@ethersproject/units'
 import { useAccount, useProvider, erc20ABI, useSigner } from 'wagmi'
 import { Contract } from '@ethersproject/contracts'
-import {
-	TETUBAL_BRIBE_VAULT_ADDRESS,
-	CURRENT_SNAPSHOT_PROPOSAL_ID_OVERRIDE_FOR_FUCKUP,
-	TETU_LIQUIDATOR_ADDRESS,
-	USDC_ADDRESS,
-} from '@/lib/consts'
+import { TETUBAL_BRIBE_VAULT_ADDRESS, ROUNDS, TETU_LIQUIDATOR_ADDRESS, USDC_ADDRESS } from '@/lib/consts'
 import { keccak256 } from '@ethersproject/keccak256'
 
 const BribeModal: FC<{ show: boolean; onClose: Function; choicesToGaugeAddress: any }> = ({
@@ -116,12 +111,7 @@ const BribeModal: FC<{ show: boolean; onClose: Function; choicesToGaugeAddress: 
 				)
 				const tx = await bribeVaultContract
 					.connect(signer)
-					.createBribe(
-						keccak256(CURRENT_SNAPSHOT_PROPOSAL_ID_OVERRIDE_FOR_FUCKUP),
-						gaugeAddress,
-						tokenAddressRaw,
-						bribeAmountParsed
-					)
+					.createBribe(keccak256(ROUNDS[0].bribeProposalId), gaugeAddress, tokenAddressRaw, bribeAmountParsed)
 				setIsWaitingForTransaction(true)
 				await tx.wait()
 				setIsWaitingForTransaction(false)
