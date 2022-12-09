@@ -177,7 +177,7 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 			</div>
 
 			<div className="grid md:grid-cols-3 gap-4 py-6">
-				<InfoBubble loading={!data} title="$tetuBAL supply">
+				<InfoBubble loading={!data} title="Tetu $veBAL locked">
 					{data ? BigNumber(data.tetuBalTotalSupply).toFormat(0) : ''}
 				</InfoBubble>
 				<InfoBubble loading={!data} title="Emissions per veBAL (weekly)">

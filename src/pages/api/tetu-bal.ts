@@ -10,6 +10,7 @@ import {
 	getAllGaugesFromSubgraph,
 	getBribeData,
 	getHiddenHandData,
+	getBalanceOf,
 } from './shared'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -19,7 +20,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 	const [balPrice, tetuBalTotalSupply, veBalTotalSupply, snapshotData, bribes, allGauges, hiddenHandData] =
 		await Promise.all([
 			getCoingeckoPrice('balancer'),
-			getTotalSupply(polygonProvider, '0x7fC9E0Aa043787BFad28e29632AdA302C790Ce33'),
+			getBalanceOf(
+				mainnetProvider,
+				'0xC128a9954e6c874eA3d62ce62B468bA073093F25',
+				'0x9cC56Fa7734DA21aC88F6a816aF10C5b898596Ce'
+			),
 			getTotalSupply(mainnetProvider, '0xC128a9954e6c874eA3d62ce62B468bA073093F25'),
 			getSnapshotData(roundData.proposalId),
 			getBribeData(polygonProvider, roundData.bribeProposalId),
