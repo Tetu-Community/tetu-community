@@ -102,7 +102,7 @@ export async function getSnapshotData(proposalId: string): Promise<any> {
       }
 
       votes (
-        first: 10000,
+        first: 1000,
         skip: 0,
         where: {
           proposal: "${proposalId}"
@@ -118,6 +118,8 @@ export async function getSnapshotData(proposalId: string): Promise<any> {
     }
   `
 	)
+
+	if (resp.votes.length === 1000) throw new Error('need to impl pagination')
 
 	return {
 		proposal: resp.proposals[0],
