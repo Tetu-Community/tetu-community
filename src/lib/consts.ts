@@ -3,8 +3,15 @@ export const APP_NAME = 'Tetu.Community'
 // these will change each round:
 export const ROUNDS = [
 	{
+		number: 10,
+		title: 'BRV-010: Gauge Weight for Week of 22nd December 2022',
+		proposalId: '0x8726a8e75c2da8ca18fb317b085d50f8daa648cbc5dfa1349686b6f01119a191',
+		bribeProposalId: '0x8726a8e75c2da8ca18fb317b085d50f8daa648cbc5dfa1349686b6f01119a191',
+		hhBalancerDeadline: 1672272000,
+	},
+	{
 		number: 9,
-		title: 'BRV-009: Gauge Weight for Week of 24th November 2022',
+		title: 'BRV-009: Gauge Weight for Week of 8th December 2022',
 		proposalId: '0xe21d871626555ef18e905aea3ec9c0b25f7d9214f834c515fa5480bd4bfc003b',
 		bribeProposalId: '0xe21d871626555ef18e905aea3ec9c0b25f7d9214f834c515fa5480bd4bfc003b',
 		hhBalancerDeadline: 1671062400,
