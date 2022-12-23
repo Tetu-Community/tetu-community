@@ -5,7 +5,7 @@ export const ROUNDS = [
 	{
 		number: 10,
 		title: 'BRV-010: Gauge Weight for Week of 22nd December 2022',
-		proposalId: '0x8726a8e75c2da8ca18fb317b085d50f8daa648cbc5dfa1349686b6f01119a191',
+		proposalId: '0x06f4562be6c133d755e01f6eab7a0462cb3c5ced2b65ad32abb36ca49af47a37',
 		bribeProposalId: '0x8726a8e75c2da8ca18fb317b085d50f8daa648cbc5dfa1349686b6f01119a191',
 		hhBalancerDeadline: 1672272000,
 	},
