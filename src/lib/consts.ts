@@ -1,4 +1,5 @@
 export const APP_NAME = 'Tetu.Community'
+export const FEE_PERCENT = 2
 
 // these will change each round:
 export const ROUNDS = [

@@ -4,6 +4,7 @@ import BigNumber from 'bignumber.js'
 import { Contract } from '@ethersproject/contracts'
 import ms from 'ms'
 import {
+	FEE_PERCENT,
 	TETUBAL_BRIBE_VAULT_ADDRESS,
 	TETU_LIQUIDATOR_ADDRESS,
 	USDC_ADDRESS,
@@ -157,10 +158,12 @@ export async function getBribeData(provider: any, proposalId: string): Promise<a
 	const retBribes = []
 
 	for (const b of res) {
+		const fee = b.amount.mul(FEE_PERCENT).div(100)
+
 		retBribes.push({
 			gauge: b.gauge,
 			token: b.bribeToken,
-			amount: b.amount,
+			amount: b.amount.sub(fee),
 		})
 	}
 

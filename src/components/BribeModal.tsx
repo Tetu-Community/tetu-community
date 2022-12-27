@@ -4,7 +4,7 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { parseUnits, formatUnits } from '@ethersproject/units'
 import { useAccount, useProvider, erc20ABI, useSigner } from 'wagmi'
 import { Contract } from '@ethersproject/contracts'
-import { TETUBAL_BRIBE_VAULT_ADDRESS, ROUNDS, TETU_LIQUIDATOR_ADDRESS, USDC_ADDRESS } from '@/lib/consts'
+import { FEE_PERCENT, TETUBAL_BRIBE_VAULT_ADDRESS, ROUNDS, TETU_LIQUIDATOR_ADDRESS, USDC_ADDRESS } from '@/lib/consts'
 import { keccak256 } from '@ethersproject/keccak256'
 
 const BribeModal: FC<{ show: boolean; onClose: Function; choicesToGaugeAddress: any }> = ({
@@ -37,6 +37,8 @@ const BribeModal: FC<{ show: boolean; onClose: Function; choicesToGaugeAddress: 
 	const [needsApprove, setNeedsApprove] = useState(false)
 	const [isSigningTransaction, setIsSigningTransaction] = useState(false)
 	const [isWaitingForTransaction, setIsWaitingForTransaction] = useState(false)
+
+	const feeAmount = bribeAmountParsed.mul(FEE_PERCENT).div(100)
 
 	async function loadConfirmPage() {
 		try {
@@ -134,6 +136,10 @@ const BribeModal: FC<{ show: boolean; onClose: Function; choicesToGaugeAddress: 
 							<p className="text-base leading-relaxed text-gray-500 dark:text-gray-400">
 								You can deposit a bribe token here, and it will be used to incentivize voters to vote
 								for your gauge.
+							</p>
+							<p className="text-base leading-relaxed text-gray-500 dark:text-gray-400">
+								{FEE_PERCENT}% of your bribe will be withheld as a fee to support Tetu.Community's
+								development and maintenance.
 							</p>
 							<p className="text-base leading-relaxed text-gray-500 dark:text-gray-400">
 								Please note that in order to prevent spam, your bribe must have a value of at least $10.
@@ -271,7 +277,7 @@ const BribeModal: FC<{ show: boolean; onClose: Function; choicesToGaugeAddress: 
 							</dd>
 							<dt className="mt-6 text-md font-medium text-gray-200">Bribe amount</dt>
 							<dd className="mt-1 text-md text-gray-300">
-								{formatUnits(bribeAmountParsed, tokenDecimals)}
+								{formatUnits(bribeAmountParsed.sub(feeAmount), tokenDecimals)}
 								&nbsp;
 								<a
 									href={`https://polygonscan.com/address/${tokenAddressRaw}`}
@@ -287,6 +293,18 @@ const BribeModal: FC<{ show: boolean; onClose: Function; choicesToGaugeAddress: 
 								If the price is incorrect, you can still submit your bribe. However, please contact us
 								in Discord in order to add a corrected price provider.
 							</p>
+							<dt className="mt-6 text-md font-medium text-gray-200">Fee amount</dt>
+							<dd className="mt-1 text-md text-gray-300">
+								{formatUnits(feeAmount, tokenDecimals)}
+								&nbsp;
+								<a
+									href={`https://polygonscan.com/address/${tokenAddressRaw}`}
+									target="_blank"
+									rel="noreferrer"
+								>
+									{tokenSymbol}
+								</a>
+							</dd>
 						</dl>
 					</Modal.Body>
 					<Modal.Footer>
