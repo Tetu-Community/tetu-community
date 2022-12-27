@@ -138,7 +138,7 @@ const BribeModal: FC<{ show: boolean; onClose: Function; choicesToGaugeAddress: 
 								for your gauge.
 							</p>
 							<p className="text-base leading-relaxed text-gray-500 dark:text-gray-400">
-								{FEE_PERCENT}% of your bribe will be withheld as a fee to support Tetu.Community's
+								{FEE_PERCENT}% of your bribe will be withheld as a fee to support Tetu.Community&rquo;s
 								development and maintenance.
 							</p>
 							<p className="text-base leading-relaxed text-gray-500 dark:text-gray-400">
