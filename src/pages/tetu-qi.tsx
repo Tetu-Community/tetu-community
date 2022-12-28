@@ -4,9 +4,9 @@ import InfoBubble from '@/components/InfoBubble'
 import useSWR from 'swr'
 import fetcher from '@/lib/fetcher'
 
-const LATEST_BRIBES_PER_1_PERCENT = BigNumber('500')
-const LATEST_EQI_VOTING = BigNumber('62991200.451612905')
-const LATEST_DXTETU_VOTING = BigNumber('69159059.13461539')
+const LATEST_BRIBES_PER_1_PERCENT = BigNumber('343.51')
+const LATEST_EQI_VOTING = BigNumber('46118410.2643171806')
+const LATEST_DXTETU_VOTING = BigNumber('66866905.3085090014')
 
 const TetuQi: FC = () => {
 	const { data, error } = useSWR('/api/home', fetcher)
