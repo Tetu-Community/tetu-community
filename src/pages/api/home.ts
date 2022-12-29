@@ -3,7 +3,7 @@ import { polygonProvider } from '@/lib/ethers'
 import {
 	TETU_EQI_ADDRESS,
 	XTETU_ADDRESS,
-	DXTETU_ADDRESS,
+	VETETU_POWER_ADDRESS,
 	TETU_CONTRACT_READER_POLYGON_ADDRESS,
 	TETUBAL_ADDRESS,
 	TETUQI_ADDRESS,
@@ -35,7 +35,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 	] = await Promise.all([
 		getCoingeckoPrice('tetu'),
 		getTetuCirculatingSupply(),
-		getTotalSupply(polygonProvider, DXTETU_ADDRESS),
+		getTotalSupply(polygonProvider, VETETU_POWER_ADDRESS),
 		getTetuTvlUsd(polygonProvider, TETU_CONTRACT_READER_POLYGON_ADDRESS, TETUBAL_ADDRESS),
 		getCoingeckoPrice('qi-dao'),
 		getTotalSupply(polygonProvider, TETUQI_ADDRESS),

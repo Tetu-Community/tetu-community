@@ -21,7 +21,7 @@ const Home: FC = () => {
 				<InfoBubble loading={!data} title="$TETU Circulating Supply">
 					{data ? BigNumber(data.tetuCirculatingSupply).toFormat(0) : ''}
 				</InfoBubble>
-				<InfoBubble loading={!data} title="$TETU locked as $dxTETU">
+				<InfoBubble loading={!data} title="Total veTETU Power">
 					{data ? BigNumber(data.dxTetuSupply).toFormat(0) : ''}
 				</InfoBubble>
 				<InfoBubble loading={!data} title="$TETU Price">
