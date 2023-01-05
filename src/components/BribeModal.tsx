@@ -100,7 +100,7 @@ const BribeModal: FC<{ show: boolean; onClose: Function; choicesToGaugeAddress: 
 				setIsWaitingForTransaction(false)
 				setNeedsApprove(false)
 			} catch (err) {
-				setError(`Error: ${err}`)
+				setError(`Error: ${err.toString()}`)
 			} finally {
 				setIsSigningTransaction(false)
 			}
@@ -119,7 +119,7 @@ const BribeModal: FC<{ show: boolean; onClose: Function; choicesToGaugeAddress: 
 				setIsWaitingForTransaction(false)
 				doClose()
 			} catch (err) {
-				setError(`Error: ${err}`)
+				setError(`Error: ${err.toString()}`)
 			} finally {
 				setIsSigningTransaction(false)
 			}
