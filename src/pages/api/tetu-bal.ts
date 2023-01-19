@@ -11,13 +11,14 @@ import {
 	getBribeData,
 	getHiddenHandData,
 	getBalanceOf,
+	getQuestData,
 } from './shared'
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 	const roundData = ROUNDS.find(r => r.number === parseInt(req.query.n.toString()))
 	if (!roundData) return res.send(404)
 
-	const [balPrice, tetuBalTotalSupply, veBalTotalSupply, snapshotData, bribes, allGauges, hiddenHandData] =
+	const [balPrice, tetuBalTotalSupply, veBalTotalSupply, snapshotData, bribes, allGauges, hiddenHandData, questData] =
 		await Promise.all([
 			getCoingeckoPrice('balancer'),
 			getBalanceOf(
@@ -30,6 +31,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 			getBribeData(polygonProvider, roundData.bribeProposalId),
 			getAllGaugesFromSubgraph(),
 			getHiddenHandData(roundData.hhBalancerDeadline),
+			getQuestData(),
 		])
 
 	const choicesToGaugeAddress = {}
@@ -53,6 +55,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 		choicesToGaugeAddress,
 		choicesToGaugeTypes,
 		hiddenHandData,
+		questData,
 	})
 }
 
