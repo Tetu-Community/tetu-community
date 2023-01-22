@@ -216,7 +216,7 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 				</InfoBubble>
 				<InfoBubble
 					loading={!data}
-					title={hideSideMarketData ? 'Total Bribes (Tetu only)' : 'Total Bribes (incl. Quest & Hidden Hand)'}
+					title={hideSideMarketData ? 'Total Bribes (Tetu only)' : 'Total Bribes (incl. Warden Quest & Hidden Hand)'}
 				>
 					${totalBribes ? totalBribes.toFixed(2) : '-'}
 				</InfoBubble>
@@ -281,8 +281,7 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 								href="https://hiddenhand.finance/balancer"
 								className="ml-4"
 								target="_blank"
-								rel="noreferrer"
-							>
+								rel="noreferrer"							>
 								View on Hidden Hand &nbsp;
 								<ArrowTopRightOnSquareIcon className="inline w-4 mb-1" />
 							</a>
@@ -291,8 +290,11 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 								className="ml-4"
 								target="_blank"
 								rel="noreferrer"
+								style={
+									{color: "#B9C3D1",}
+								}
 							>
-								View on Quest &nbsp;
+								View on Warden Quest &nbsp;
 								<ArrowTopRightOnSquareIcon className="inline w-4 mb-1" />
 							</a>
 						</h3>
@@ -402,7 +404,7 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 																className="max-w-s"
 																content={`Tetu bribes: $${td.tetuBribeUsd.toFixed(
 																	2
-																)}, Quest bribes: $${td.questBribesUsd.toFixed(
+																)}, Warden Quest bribes: $${td.questBribesUsd.toFixed(
 																	2
 																)}, Hidden Hand bribes: $${td.hhBribeUsd.toFixed(2)}`}
 																placement="top"
@@ -445,7 +447,7 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 																className="max-w-s"
 																content={`Tetu $/tetuBalPower: $${td.bribePerVoteTetu.toFixed(
 																	2
-																)}, Quest $/veBAL: $${td.bribePerVoteQuest.toFixed(
+																)}, Warden Quest $/veBAL: $${td.bribePerVoteQuest.toFixed(
 																	2
 																)}, Hidden Hand $/veBAL: $${td.bribePerVoteHH.toFixed(
 																	2
