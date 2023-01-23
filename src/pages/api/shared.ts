@@ -266,7 +266,7 @@ async function getGaugeBiasBlacklist(gauge: string, blacklist: string[]): Promis
 }
 
 export async function getQuestData() {
-	const res = await axios.get('http://localhost:8080/boards/bal/active?usd')
+	const res = await axios.get('https://api.warden.vote/boards/bal/active?usd')
 
 	const quests = res.data.filter(q => !q.blacklist || !q.blacklist.includes(TETU_BAL_LOCKER_ADDRESS))
 
