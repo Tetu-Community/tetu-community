@@ -10,7 +10,7 @@ const Home: FC = () => {
 	return (
 		<div className="max-w-2xl mx-auto px-6 pt-4">
 			<div className="text-justify">
-				Tetu.Community is designed to showcase the benefits of holding dxTETU, the governance token of the{' '}
+				Tetu.Community is designed to showcase the benefits of holding veTETU, the governance token of the{' '}
 				<a href="https://app.tetu.io" target="_blank" rel="noreferrer">
 					Tetu
 				</a>{' '}

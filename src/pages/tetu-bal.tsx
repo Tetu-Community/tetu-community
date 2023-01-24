@@ -171,7 +171,7 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 					</a>{' '}
 					$veBAL governance token, which is created by permanently locking 20WETH-80BAL LP tokens on Ethereum
 					Mainnet. Currently, Tetu&rsquo;s $veBAL voting power is split in an interesting way: $TetuBAL tokens
-					in the LP are controlled by $dxTETU holders, whereas users who hold $TetuBAL tokens in their wallet
+					in the LP are controlled by $veTETU holders, whereas users who hold $TetuBAL tokens in their wallet
 					maintain their governance rights.
 				</p>
 			</div>
