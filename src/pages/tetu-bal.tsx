@@ -390,7 +390,7 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 											</td>
 											<td className="py-4 px-6">
 												{td.bribePerVoteTotal.gt(0)
-													? '$' + td.bribePerVoteTotal.toFixed(2)
+													? '$' + td.bribePerVoteTotal.toFixed(3)
 													: '-'}
 
 												{!hideHiddenHandData && td.bribePerVoteHH.gt(0) ? (
