@@ -28,6 +28,16 @@ function tetuBribesToTooltipString(tetuBribes) {
 		.join(', ')
 }
 
+function bribeTooltip(prices: [string, BigNumber][]): string {
+	const tooltip = []
+	prices.forEach(([name, value]) => {
+		if (value.gt(0)) {
+			tooltip.push(`${name}: $${value.toFixed(2)}`)
+		}
+	})
+	return tooltip.join(', ')
+}
+
 const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 	const { isConnected, address } = useAccount()
 	const [roundNum, setRoundNum] = useState(ROUNDS[0].number)
@@ -216,7 +226,7 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 				</InfoBubble>
 				<InfoBubble
 					loading={!data}
-					title={hideSideMarketData ? 'Total Bribes (Tetu only)' : 'Total Bribes (incl. Warden Quest & Hidden Hand)'}
+					title={hideSideMarketData ? 'Total Bribes (Tetu only)' : 'Total Bribes (incl. incentives markets)'}
 				>
 					${totalBribes ? totalBribes.toFixed(2) : '-'}
 				</InfoBubble>
@@ -281,8 +291,9 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 								href="https://hiddenhand.finance/balancer"
 								className="ml-4"
 								target="_blank"
-								rel="noreferrer"							>
-								View on Hidden Hand &nbsp;
+								rel="noreferrer"
+							>
+								Hidden Hand &nbsp;
 								<ArrowTopRightOnSquareIcon className="inline w-4 mb-1" />
 							</a>
 							<a
@@ -290,11 +301,9 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 								className="ml-4"
 								target="_blank"
 								rel="noreferrer"
-								style={
-									{color: "#B9C3D1",}
-								}
+								style={{ color: '#B9C3D1' }}
 							>
-								View on Warden Quest &nbsp;
+								Warden Quest &nbsp;
 								<ArrowTopRightOnSquareIcon className="inline w-4 mb-1" />
 							</a>
 						</h3>
@@ -402,11 +411,11 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 														<div className="tooltip-wrapper">
 															<Tooltip
 																className="max-w-s"
-																content={`Tetu bribes: $${td.tetuBribeUsd.toFixed(
-																	2
-																)}, Warden Quest bribes: $${td.questBribesUsd.toFixed(
-																	2
-																)}, Hidden Hand bribes: $${td.hhBribeUsd.toFixed(2)}`}
+																content={bribeTooltip([
+																	['Tetu bribes', td.tetuBribeUsd],
+																	['Warden Quest bribes', td.questBribesUsd],
+																	['Hidden Hand bribes', td.hhBribeUsd],
+																])}
 																placement="top"
 															>
 																<QuestionMarkCircleIcon className="inline w-4 text-slate-600" />
@@ -445,13 +454,11 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 														<div className="tooltip-wrapper">
 															<Tooltip
 																className="max-w-s"
-																content={`Tetu $/tetuBalPower: $${td.bribePerVoteTetu.toFixed(
-																	2
-																)}, Warden Quest $/veBAL: $${td.bribePerVoteQuest.toFixed(
-																	2
-																)}, Hidden Hand $/veBAL: $${td.bribePerVoteHH.toFixed(
-																	2
-																)}`}
+																content={bribeTooltip([
+																	['Tetu $/tetuBalPower', td.bribePerVoteTetu],
+																	['Warden Quest $/veBAL', td.bribePerVoteQuest],
+																	['Hidden Hand $/veBAL', td.bribePerVoteHH],
+																])}
 																placement="top"
 															>
 																<QuestionMarkCircleIcon className="inline w-4 text-slate-600" />
