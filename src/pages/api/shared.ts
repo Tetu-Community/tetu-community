@@ -235,3 +235,53 @@ export async function getCurrentTetuVeBALGaugeVotes() {
 
 	return percents
 }
+
+// Fetch gauge current bias & handle Quest blacklist feature
+// Remove blacklisted addresses votes from gauge bias
+async function getGaugeBiasBlacklist(gauge: string, blacklist: string[]): Promise<BigNumber> {
+	const secPerWeek = 60 * 60 * 24 * 7
+	const controllerContract = new Contract(BAL_GAUGE_CONTROLLER_ADDRESS, gaugeControllerAbi, mainnetProvider)
+
+	if (blacklist.length === 0) {
+		const bias = await controllerContract.get_gauge_weight(gauge)
+		return BigNumber(bias.toString())
+	}
+
+	const nextPeriod = (Math.trunc(Date.now() / (1000 * secPerWeek)) + 1) * secPerWeek
+
+	const [gaugeBias, blacklistVotes] = await Promise.all([
+		controllerContract.get_gauge_weight(gauge),
+		Promise.all(
+			blacklist.map(async addr => {
+				const vote = await controllerContract.vote_user_slopes(addr, gauge)
+				const bias = vote.slope.mul(vote.end.sub(nextPeriod))
+				return bias.lte(0) ? new BigNumber(0) : bias
+			})
+		),
+	])
+
+	const blacklistTotal = blacklistVotes.reduce((pre, cur) => cur.add(pre), 0)
+
+	return gaugeBias.gte(blacklistTotal)
+		? BigNumber(gaugeBias.sub(blacklistTotal).toString()).shiftedBy(-18)
+		: new BigNumber(0)
+}
+
+export async function getQuestData() {
+	try {
+		const res = await axios.get('https://api.warden.vote/boards/bal/active?usd')
+
+		const quests = res.data.filter(q => !q.blacklist || !q.blacklist.includes(TETU_BAL_LOCKER_ADDRESS))
+
+		const withBias = await Promise.all(
+			quests.map(async quest => {
+				const bias = await getGaugeBiasBlacklist(quest.gauge, quest.blacklist ? quest.blacklist : [])
+				return { ...quest, bias }
+			})
+		)
+
+		return withBias
+	} catch {
+		return []
+	}
+}

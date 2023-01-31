@@ -28,13 +28,23 @@ function tetuBribesToTooltipString(tetuBribes) {
 		.join(', ')
 }
 
+function bribeTooltip(prices: [string, BigNumber][]): string {
+	const tooltip = []
+	prices.forEach(([name, value]) => {
+		if (value.gt(0)) {
+			tooltip.push(`${name}: $${value.toFixed(2)}`)
+		}
+	})
+	return tooltip.join(', ')
+}
+
 const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 	const { isConnected, address } = useAccount()
 	const [roundNum, setRoundNum] = useState(ROUNDS[0].number)
 	const [sortBy, setSortBy] = useState('scoreTotal')
 	const [sortDirection, setSortDirection] = useState('desc')
 	const [showBribeModal, setShowBribeModal] = useState(false)
-	const [hideHiddenHandData, setHideHiddenHandData] = useState(false)
+	const [hideSideMarketData, setHideSideMarketData] = useState(false)
 
 	function updateSort(newSortBy) {
 		if (sortBy === newSortBy) {
@@ -62,12 +72,17 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 		// Calculate total bribes (Tetu and HH)
 		for (const b of data.bribes) totalBribes = totalBribes.plus(BigNumber(b.amountUsdc).shiftedBy(-6))
 
-		if (!hideHiddenHandData) {
+		if (!hideSideMarketData) {
 			for (const proposal of data.hiddenHandData) {
 				for (const b of proposal.bribes) {
 					totalBribes = totalBribes.plus(b.value)
 				}
 			}
+			totalBribes = totalBribes.plus(
+				data.questData
+					.reduce((pre, cur) => pre.plus(cur.values.rewardAmountPerPeriod), BigNumber(0))
+					.shiftedBy(-18)
+			)
 		}
 
 		// Calculate current user's VP for each choice
@@ -117,16 +132,40 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 				break
 			}
 
-			const scoreTotal = hideHiddenHandData ? tetuScore : tetuScore.plus(hhScore)
+			// find Quest bribes
+			let questBribesUsd = BigNumber(0)
+			let bribePerVoteQuest = BigNumber(0)
+			for (const quest of data.questData) {
+				if (!quest.gauge.toLowerCase().includes(gaugeAddressPrefix)) continue
+				const foundOldTetuVotePercent = existingTetuVotes[quest.gauge.toLowerCase()]
+				let bias = BigNumber(quest.bias)
+				if (foundOldTetuVotePercent) {
+					bias = BigNumber(quest.bias).minus(
+						BigNumber(data.tetuBalTotalSupply).times(foundOldTetuVotePercent)
+					)
+				}
+				if (bias.gt(quest.objectiveVotes)) {
+					continue
+				}
 
-			const totalBribeUsd = hideHiddenHandData ? tetuBribeUsd : tetuBribeUsd.plus(hhBribeUsd)
+				questBribesUsd = questBribesUsd.plus(quest.values.rewardAmountPerPeriod)
+				bribePerVoteQuest = bribePerVoteQuest.plus(quest.values.rewardPerVote)
+			}
+			questBribesUsd = questBribesUsd.times(2).shiftedBy(-18)
+			bribePerVoteQuest = bribePerVoteQuest.times(2).shiftedBy(-18)
+
+			const scoreTotal = hideSideMarketData ? tetuScore : tetuScore.plus(hhScore)
+
+			const totalBribeUsd = hideSideMarketData ? tetuBribeUsd : tetuBribeUsd.plus(hhBribeUsd).plus(questBribesUsd)
 
 			// count tetu bribes divided by the number of tetu votes
 			const bribePerVoteTetu = tetuScore.gt(0) ? tetuBribeUsd.div(tetuScore) : BigNumber(0)
 
 			// count hidden hand bribes, divided by (submitted hh votes + pending tetu votes)
 			const bribePerVoteHH = scoreTotal.gt(0) ? hhBribeUsd.div(scoreTotal) : BigNumber(0)
-			const bribePerVoteTotal = hideHiddenHandData ? bribePerVoteTetu : bribePerVoteTetu.plus(bribePerVoteHH)
+			const bribePerVoteTotal = hideSideMarketData
+				? bribePerVoteTetu
+				: bribePerVoteTetu.plus(bribePerVoteHH).plus(bribePerVoteQuest)
 			const myVotes = myVoteChoicesToVp[choice] || BigNumber(0)
 			const myBribes = bribePerVoteTotal.times(myVotes)
 
@@ -138,9 +177,11 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 				hhScore,
 				scoreTotal,
 				tetuBribeUsd,
+				questBribesUsd,
 				hhBribeUsd,
 				totalBribeUsd,
 				bribePerVoteHH,
+				bribePerVoteQuest,
 				bribePerVoteTetu,
 				bribePerVoteTotal,
 				myVotes,
@@ -185,7 +226,7 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 				</InfoBubble>
 				<InfoBubble
 					loading={!data}
-					title={hideHiddenHandData ? 'Total Bribes (Tetu only)' : 'Total Bribes (incl. Hidden Hand)'}
+					title={hideSideMarketData ? 'Total Bribes (Tetu only)' : 'Total Bribes (with external markets)'}
 				>
 					${totalBribes ? totalBribes.toFixed(2) : '-'}
 				</InfoBubble>
@@ -252,14 +293,24 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 								target="_blank"
 								rel="noreferrer"
 							>
-								View on Hidden Hand &nbsp;
+								Hidden Hand &nbsp;
+								<ArrowTopRightOnSquareIcon className="inline w-4 mb-1" />
+							</a>
+							<a
+								href="https://app.warden.vote/quest?protocol=bal"
+								className="ml-4"
+								target="_blank"
+								rel="noreferrer"
+								style={{ color: '#B9C3D1' }}
+							>
+								Warden Quest &nbsp;
 								<ArrowTopRightOnSquareIcon className="inline w-4 mb-1" />
 							</a>
 						</h3>
 						<ToggleSwitch
-							checked={hideHiddenHandData}
-							label="Hide data from Hidden Hand"
-							onChange={v => setHideHiddenHandData(v)}
+							checked={hideSideMarketData}
+							label="Hide data from external markets"
+							onChange={v => setHideSideMarketData(v)}
 						/>
 					</div>
 
@@ -353,15 +404,18 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 											<td className="py-4 px-6">{BigNumber(td.scoreTotal).toFixed(2)}</td>
 											<td className="py-4 px-6">
 												{td.totalBribeUsd.gt(0) ? '$' + td.totalBribeUsd.toFixed(0) : '-'}
-												{!hideHiddenHandData && td.hhBribeUsd.gt(0) ? (
+												{!hideSideMarketData &&
+												(td.hhBribeUsd.gt(0) || td.questBribesUsd.gt(0)) ? (
 													<>
 														&nbsp;
 														<div className="tooltip-wrapper">
 															<Tooltip
 																className="max-w-s"
-																content={`Tetu bribes: $${td.tetuBribeUsd.toFixed(
-																	2
-																)}, Hidden Hand bribes: $${td.hhBribeUsd.toFixed(2)}`}
+																content={bribeTooltip([
+																	['Tetu bribes', td.tetuBribeUsd],
+																	['Warden Quest bribes', td.questBribesUsd],
+																	['Hidden Hand bribes', td.hhBribeUsd],
+																])}
 																placement="top"
 															>
 																<QuestionMarkCircleIcon className="inline w-4 text-slate-600" />
@@ -393,17 +447,18 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 													? '$' + td.bribePerVoteTotal.toFixed(3)
 													: '-'}
 
-												{!hideHiddenHandData && td.bribePerVoteHH.gt(0) ? (
+												{!hideSideMarketData &&
+												(td.bribePerVoteHH.gt(0) || td.bribePerVoteQuest.gt(0)) ? (
 													<>
 														&nbsp;
 														<div className="tooltip-wrapper">
 															<Tooltip
 																className="max-w-s"
-																content={`Tetu $/tetuBalPower: $${td.bribePerVoteTetu.toFixed(
-																	2
-																)}, Hidden Hand $/veBAL: $${td.bribePerVoteHH.toFixed(
-																	2
-																)}`}
+																content={bribeTooltip([
+																	['Tetu $/tetuBalPower', td.bribePerVoteTetu],
+																	['Warden Quest $/veBAL', td.bribePerVoteQuest],
+																	['Hidden Hand $/veBAL', td.bribePerVoteHH],
+																])}
 																placement="top"
 															>
 																<QuestionMarkCircleIcon className="inline w-4 text-slate-600" />
