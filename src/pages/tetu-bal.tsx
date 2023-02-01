@@ -301,7 +301,6 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 								className="ml-4"
 								target="_blank"
 								rel="noreferrer"
-								style={{ color: '#B9C3D1' }}
 							>
 								Warden Quest &nbsp;
 								<ArrowTopRightOnSquareIcon className="inline w-4 mb-1" />
