@@ -10,6 +10,7 @@ import {
 	USDC_ADDRESS,
 	BAL_GAUGE_CONTROLLER_ADDRESS,
 	TETU_BAL_LOCKER_ADDRESS,
+  ROUNDS
 } from '@/lib/consts'
 import { keccak256 } from '@ethersproject/keccak256'
 import { erc20ABI } from 'wagmi'
@@ -204,8 +205,13 @@ export async function getBribeData(provider: any, proposalId: string): Promise<a
 }
 
 export async function getHiddenHandData(deadline) {
-	const res = await axios.get(`https://hhand.xyz/proposal/balancer/${deadline}`)
-	return res.data.data
+  if (deadline === ROUNDS[0].hhBalancerDeadline) {
+    const res = await axios.get('https://hiddenhand.finance/_next/data/lXnLHeKlStdky4S1ep8GP/balancer.json')
+    return res.data.pageProps.proposalsData
+  } else {
+    const res = await axios.get(`https://hhand.xyz/proposal/balancer/${deadline}`)
+    return res.data.data
+  }
 }
 
 export async function getCurrentTetuVeBALGaugeVotes() {
