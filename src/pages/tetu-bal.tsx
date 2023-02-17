@@ -120,15 +120,17 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 				if (!proposal.proposal.toLowerCase().includes(gaugeAddressPrefix)) continue
 				hhScore = BigNumber(proposal.voteCount)
 
-				// remove old tetu vote from hhSocre
+				// remove old tetu vote from hhScore
 				const foundOldTetuVotePercent = existingTetuVotes[proposal.proposal]
 				if (foundOldTetuVotePercent) {
 					hhScore = hhScore.minus(BigNumber(data.tetuBalTotalSupply).times(foundOldTetuVotePercent))
+          if (hhScore.lt(0)) hhScore = BigNumber(0)
 				}
 
 				for (const b of proposal.bribes) {
 					hhBribeUsd = hhBribeUsd.plus(b.value)
 				}
+
 				break
 			}
 
