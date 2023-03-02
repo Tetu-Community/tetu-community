@@ -82,7 +82,7 @@ export async function getBalanceOf(provider: any, contractAddress: string, userA
 }
 
 export async function getSnapshotData(proposalId: string): Promise<any> {
-	const resp = await request(
+	const resp: any = await request(
 		SNAPSHOT_GRAPHQL_ENDPOINT,
 		gql`
     query {
@@ -121,8 +121,6 @@ export async function getSnapshotData(proposalId: string): Promise<any> {
   `
 	)
 
-  console.log('debug snapshot api result', resp)
-
 	if (resp.votes.length === 1000) throw new Error('need to impl pagination')
 
 	return {
@@ -132,7 +130,7 @@ export async function getSnapshotData(proposalId: string): Promise<any> {
 }
 
 export async function getAllGaugesFromSubgraph(): Promise<any> {
-	const resp = await request(
+	const resp: any = await request(
 		'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-gauges',
 		gql`
 			query {
