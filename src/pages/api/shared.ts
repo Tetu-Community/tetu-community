@@ -121,6 +121,8 @@ export async function getSnapshotData(proposalId: string): Promise<any> {
   `
 	)
 
+  console.log('debug snapshot api result', resp)
+
 	if (resp.votes.length === 1000) throw new Error('need to impl pagination')
 
 	return {
