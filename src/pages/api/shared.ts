@@ -1,3 +1,4 @@
+import { BigNumber as ebn } from 'ethers'
 import axios from 'axios'
 import { request, gql } from 'graphql-request'
 import BigNumber from 'bignumber.js'
@@ -23,24 +24,24 @@ const SNAPSHOT_GRAPHQL_ENDPOINT = 'https://hub.snapshot.org/graphql'
 export async function getCoingeckoPrice(id: string): Promise<BigNumber> {
 	const resp = await axios.get(`https://api.coingecko.com/api/v3/coins/${id}`)
 	const rawPrice = resp.data.market_data.current_price.usd
-	return BigNumber(rawPrice)
+	return new BigNumber(rawPrice)
 }
 
 export async function getTotalSupply(provider: any, address: string): Promise<BigNumber> {
 	const c = new Contract(address, ['function totalSupply() external view returns (uint)'], provider)
 
-	return BigNumber((await c.totalSupply()).toString()).shiftedBy(-18)
+	return new BigNumber((await c.totalSupply()).toString()).shiftedBy(-18)
 }
 
 export async function getPricePerFullShare(provider: any, address: string): Promise<BigNumber> {
 	const c = new Contract(address, ['function getPricePerFullShare() external view returns (uint)'], provider)
 
-	return BigNumber((await c.getPricePerFullShare()).toString()).shiftedBy(-18)
+	return new BigNumber((await c.getPricePerFullShare()).toString()).shiftedBy(-18)
 }
 
 export async function getTetuCirculatingSupply(): Promise<BigNumber> {
 	const resp = await axios.get('https://api.tetu.io/api/v1/info/circulationSupply')
-	return BigNumber(resp.data)
+	return new BigNumber(resp.data)
 }
 
 export async function getTetuTvlUsd(
@@ -54,7 +55,7 @@ export async function getTetuTvlUsd(
 		provider
 	)
 
-	return BigNumber((await c.vaultTvlUsdc(vaultAddress)).toString()).shiftedBy(-18)
+	return new BigNumber((await c.vaultTvlUsdc(vaultAddress)).toString()).shiftedBy(-18)
 }
 
 export async function getPpfsApr(
@@ -68,7 +69,7 @@ export async function getPpfsApr(
 		provider
 	)
 
-	return BigNumber((await c.vaultPpfsApr(vaultAddress)).toString()).shiftedBy(-18)
+	return new BigNumber((await c.vaultPpfsApr(vaultAddress)).toString()).shiftedBy(-18)
 }
 
 export async function getBalanceOf(provider: any, contractAddress: string, userAddress: string): Promise<BigNumber> {
@@ -78,7 +79,7 @@ export async function getBalanceOf(provider: any, contractAddress: string, userA
 		provider
 	)
 
-	return BigNumber((await c.balanceOf(userAddress)).toString()).shiftedBy(-18)
+	return new BigNumber((await c.balanceOf(userAddress)).toString()).shiftedBy(-18)
 }
 
 export async function getSnapshotData(proposalId: string): Promise<any> {
@@ -221,7 +222,7 @@ export async function getCurrentTetuVeBALGaugeVotes() {
 		gaugeAddresses.map(async function (gaugeAddress) {
 			const res = await c.vote_user_slopes(TETU_BAL_LOCKER_ADDRESS, gaugeAddress)
 			if (res.power.eq(0)) return
-			powers[gaugeAddress] = BigNumber(res.power.toString())
+			powers[gaugeAddress] = new BigNumber(res.power.toString())
 		})
 	)
 
@@ -231,7 +232,7 @@ export async function getCurrentTetuVeBALGaugeVotes() {
 	// calculate the percent of the Tetu vote for each gauge
 	const percents = {}
 	for (const [gaugeAddress, power] of Object.entries(powers)) {
-		percents[gaugeAddress] = power.div(sumPower).toFixed()
+		percents[gaugeAddress] = new BigNumber(power).div(sumPower).toFixed()
 	}
 
 	return percents
@@ -245,7 +246,7 @@ async function getGaugeBiasBlacklist(gauge: string, blacklist: string[]): Promis
 
 	if (blacklist.length === 0) {
 		const bias = await controllerContract.get_gauge_weight(gauge)
-		return BigNumber(bias.toString())
+		return new BigNumber(bias.toHexString())
 	}
 
 	const nextPeriod = (Math.trunc(Date.now() / (1000 * secPerWeek)) + 1) * secPerWeek
@@ -256,15 +257,18 @@ async function getGaugeBiasBlacklist(gauge: string, blacklist: string[]): Promis
 			blacklist.map(async addr => {
 				const vote = await controllerContract.vote_user_slopes(addr, gauge)
 				const bias = vote.slope.mul(vote.end.sub(nextPeriod))
-				return bias.lte(0) ? new BigNumber(0) : bias
+				return bias.lte(0) ? 0 : bias
 			})
 		),
 	])
 
-	const blacklistTotal = blacklistVotes.reduce((pre, cur) => cur.add(pre), 0)
+	let blacklistTotal = ebn.from(0)
+  for (const v of blacklistVotes) {
+    blacklistTotal = blacklistTotal.add(v)
+  }
 
 	return gaugeBias.gte(blacklistTotal)
-		? BigNumber(gaugeBias.sub(blacklistTotal).toString()).shiftedBy(-18)
+		? new BigNumber(gaugeBias.sub(blacklistTotal).toHexString()).shiftedBy(-18)
 		: new BigNumber(0)
 }
 
@@ -282,7 +286,8 @@ export async function getQuestData() {
 		)
 
 		return withBias
-	} catch {
+	} catch (err) {
+    console.log('getQuestData error', err)
 		return []
 	}
 }
