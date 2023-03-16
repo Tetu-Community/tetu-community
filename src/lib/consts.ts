@@ -4,6 +4,13 @@ export const FEE_PERCENT = 2
 // these will change each round:
 export const ROUNDS = [
 	{
+		number: 16,
+		title: 'BRV-016: Gauge Weight for Week of 16th March 2023',
+		proposalId: '0x550b9bc05ff51cdc41509efb0de891d4041ba7e66d569a96b6a741b73839a1f1',
+		bribeProposalId: '0x550b9bc05ff51cdc41509efb0de891d4041ba7e66d569a96b6a741b73839a1f1',
+		hhBalancerDeadline: 1679529600,
+	},
+	{
 		number: 15,
 		title: 'BRV-015: Gauge Weight for Week of 2nd March 2023',
 		proposalId: '0x7d3385edf6a38827adb4897e59646f9a0693274db7912e72b0680caf79806ed2',
