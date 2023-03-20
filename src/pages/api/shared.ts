@@ -9,6 +9,7 @@ import {
 	TETUBAL_BRIBE_VAULT_ADDRESS,
 	TETU_LIQUIDATOR_ADDRESS,
 	USDC_ADDRESS,
+  USDT_ADDRESS,
 	BAL_GAUGE_CONTROLLER_ADDRESS,
 	TETU_BAL_LOCKER_ADDRESS,
   ROUNDS
@@ -188,7 +189,7 @@ export async function getBribeData(provider: any, proposalId: string): Promise<a
 
 				retBribes[i].tokenSymbol = tokenSymbol
 				retBribes[i].tokenDecimals = tokenDecimals
-				retBribes[i].amountUsdc = b.token === USDC_ADDRESS ? b.amount : amountUsdc
+				retBribes[i].amountUsdc = isStable(b.token) ? b.amount : amountUsdc
 			} catch (err) {
 				console.log('error', err)
 			}
@@ -290,4 +291,10 @@ export async function getQuestData() {
     console.log('getQuestData error', err)
 		return []
 	}
+}
+
+function isStable (tokenAddress) {
+  if (tokenAddress === USDC_ADDRESS) return true
+  if (tokenAddress === USDT_ADDRESS) return true
+  return false
 }
