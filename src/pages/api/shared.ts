@@ -188,7 +188,7 @@ export async function getBribeData(provider: any, proposalId: string): Promise<a
 
 				retBribes[i].tokenSymbol = tokenSymbol
 				retBribes[i].tokenDecimals = tokenDecimals
-				retBribes[i].amountUsdc = amountUsdc
+				retBribes[i].amountUsdc = b.token === USDC_ADDRESS ? b.amount : amountUsdc
 			} catch (err) {
 				console.log('error', err)
 			}
