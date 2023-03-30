@@ -38,7 +38,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 	const choicesToGaugeTypes = {}
 
 	for (const choice of snapshotData.proposal.choices) {
-		const prefix = choice.split('0x')[1].split(')')[0]
+		const prefix = choice.split('0x')[1].split(')')[0].toLowerCase()
 		const found = allGauges.find(g => g.address.startsWith('0x' + prefix))
 		if (found) {
 			choicesToGaugeAddress[choice] = found.address
