@@ -298,7 +298,7 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 								Hidden Hand &nbsp;
 								<ArrowTopRightOnSquareIcon className="inline w-4 mb-1" />
 							</a>
-							{/* <a
+							<a
 								href="https://app.warden.vote/quest?protocol=bal"
 								className="ml-4"
 								target="_blank"
@@ -306,7 +306,7 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 							>
 								Warden Quest &nbsp;
 								<ArrowTopRightOnSquareIcon className="inline w-4 mb-1" />
-							</a> */}
+							</a>
 						</h3>
 						<ToggleSwitch
 							checked={hideSideMarketData}
