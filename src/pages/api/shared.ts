@@ -274,23 +274,23 @@ async function getGaugeBiasBlacklist(gauge: string, blacklist: string[]): Promis
 }
 
 export async function getQuestData() {
-	try {
-		const res = await axios.get('https://api.warden.vote/boards/bal/active?usd')
+	// try {
+	// 	const res = await axios.get('https://api.warden.vote/boards/bal/active?usd')
 
-		const quests = res.data.filter(q => !q.blacklist || !q.blacklist.includes(TETU_BAL_LOCKER_ADDRESS))
+	// 	const quests = res.data.filter(q => !q.blacklist || !q.blacklist.includes(TETU_BAL_LOCKER_ADDRESS))
 
-		const withBias = await Promise.all(
-			quests.map(async quest => {
-				const bias = await getGaugeBiasBlacklist(quest.gauge, quest.blacklist ? quest.blacklist : [])
-				return { ...quest, bias }
-			})
-		)
+	// 	const withBias = await Promise.all(
+	// 		quests.map(async quest => {
+	// 			const bias = await getGaugeBiasBlacklist(quest.gauge, quest.blacklist ? quest.blacklist : [])
+	// 			return { ...quest, bias }
+	// 		})
+	// 	)
 
-		return withBias
-	} catch (err) {
-    console.log('getQuestData error', err)
+	// 	return withBias
+	// } catch (err) {
+  //   console.log('getQuestData error', err)
 		return []
-	}
+	// }
 }
 
 function isStable (tokenAddress) {
