@@ -82,8 +82,8 @@ export const ROUNDS = [
 	},
 ]
 
-// changes every year?
-export const BAL_EMISSIONS_PER_WEEK = 145000
+// changes every year: https://docs.google.com/spreadsheets/d/1FY0gi596YWBOTeu_mrxhWcdF74SwKMNhmu0qJVgs0KI/edit#gid=0
+export const BAL_EMISSIONS_PER_WEEK = 121929
 
 // addresses, etc, should not change:
 export const XTETU_ADDRESS = '0x225084D30cc297F3b177d9f93f5C3Ab8fb6a1454'
