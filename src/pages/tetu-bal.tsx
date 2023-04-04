@@ -224,7 +224,7 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 					{data ? BigNumber(data.tetuBalTotalSupply).toFormat(0) : ''}
 				</InfoBubble>
 				<InfoBubble loading={!data} title="Emissions per veBAL (weekly)">
-					${emissionsPerVeBalUsd.toFixed(2)}
+					${emissionsPerVeBalUsd.toFixed(3)}
 				</InfoBubble>
 				<InfoBubble
 					loading={!data}
