@@ -9,6 +9,7 @@ export const ROUNDS = [
 		proposalId: '0xbea1a695a085c1f45a7f37cf318fb2ee4dead77e62ea4b12d3315c7deab267c6',
 		bribeProposalId: '0xbea1a695a085c1f45a7f37cf318fb2ee4dead77e62ea4b12d3315c7deab267c6',
 		hhBalancerDeadline: 1681948800,
+    maxBribePerVote: '-'
 	},
 	{
 		number: 17,

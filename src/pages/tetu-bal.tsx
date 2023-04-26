@@ -217,18 +217,27 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 					in the LP are controlled by $veTETU holders, whereas users who hold $TetuBAL tokens in their wallet
 					maintain their governance rights.
 				</p>
+        <p className='mt-4'>
+          <strong><em>Update 2023-04-26:</em></strong> currently, one actor controls the majority of tetuBAL voting power.
+          This could pose potential problems for bribers, if they do not get the expected amount of votes for their
+          given bribe. To remedy this, we will be capping the $/vote for bribes submitted on Tetu.Community, and
+          refunding any excess to the bribers when the Tetu voting round closes.
+        </p>
 			</div>
 
-			<div className="grid md:grid-cols-3 gap-4 py-6">
+			<div className="grid md:grid-cols-4 gap-4 py-6">
 				<InfoBubble loading={!data} title="Tetu $veBAL locked">
 					{data ? BigNumber(data.tetuBalTotalSupply).toFormat(0) : ''}
 				</InfoBubble>
 				<InfoBubble loading={!data} title="Emissions per veBAL (weekly)">
 					${emissionsPerVeBalUsd.toFixed(3)}
 				</InfoBubble>
+				<InfoBubble loading={!data} title="Max $/vote for TC bribes">
+          {ROUNDS.find(r => r.number === roundNum).maxBribePerVote || '-'}
+				</InfoBubble>
 				<InfoBubble
 					loading={!data}
-					title={hideSideMarketData ? 'Total Bribes (Tetu only)' : 'Total Bribes (with external markets)'}
+					title={hideSideMarketData ? 'Bribes (TC only)' : 'Bribes (w/ ext markets)'}
 				>
 					${totalBribes ? totalBribes.toFixed(2) : '-'}
 				</InfoBubble>
