@@ -2,14 +2,22 @@ export const APP_NAME = 'Tetu.Community'
 export const FEE_PERCENT = 2
 
 // these will change each round:
+// add 1209600 for hh deadline
 export const ROUNDS = [
+	{
+		number: 19,
+		title: 'BRV-019: Gauge Weight for Week of 27th April 2023',
+		proposalId: '0x5f4cd1fd2edff65587af82b23f54e2bf2c4a79f499ccfb09f89272ff121d8088',
+		bribeProposalId: '0x5f4cd1fd2edff65587af82b23f54e2bf2c4a79f499ccfb09f89272ff121d8088',
+		hhBalancerDeadline: 1683158400,
+    maxBribePerVote: '$0.15'
+	},
 	{
 		number: 18,
 		title: 'BRV-018: Gauge Weight for Week of 13th April 2023',
 		proposalId: '0xbea1a695a085c1f45a7f37cf318fb2ee4dead77e62ea4b12d3315c7deab267c6',
 		bribeProposalId: '0xbea1a695a085c1f45a7f37cf318fb2ee4dead77e62ea4b12d3315c7deab267c6',
-		hhBalancerDeadline: 1681948800,
-    maxBribePerVote: '-'
+		hhBalancerDeadline: 1681948800
 	},
 	{
 		number: 17,
