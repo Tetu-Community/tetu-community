@@ -14,13 +14,16 @@ import {
 	TETU_BAL_LOCKER_ADDRESS,
   ROUNDS,
   votemarketBytecode,
-  votemarketBalContracts
+  votemarketBalContracts,
+  VE_BAL_ADDRESS
 } from '@/lib/consts'
 import { keccak256 } from '@ethersproject/keccak256'
 import { erc20ABI } from 'wagmi'
 import { mainnetProvider } from '@/lib/ethers'
 import gaugeControllerAbi from '@/abi/GaugeController.json'
 import range from 'lodash.range'
+import { getPrice, getPricesFromContracts } from '@/lib/defilammaUtils'
+import { formatUnits } from 'ethers/lib/utils'
 
 const SNAPSHOT_GRAPHQL_ENDPOINT = 'https://hub.snapshot.org/graphql'
 
@@ -314,14 +317,53 @@ export const getVotemarketBalVoteBounties = async () => {
 		}
 
 		const respPromisesCalls = await Promise.all(promisesCalls);
-		let voteBounties: any[] = [];
+		let voteBountiesBytes: any[] = [];
 
 		for (const votemarketBalContract of votemarketBalContracts) {
 			const returnedData = respPromisesCalls.shift();
 			const resps = ethers.utils.defaultAbiCoder.decode(
-				["tuple(tuple(address,address,address,string,uint256,uint256,uint256,uint8,uint256,uint256,uint256,address[],bool,uint256,bool,uint256,uint256)[])"],
+				["tuple(tuple(address,address,address,string,uint256,uint256,uint256,uint8,uint256,uint256,uint256,address[],bool,uint256,bool,uint256,uint256,uint256)[])"],
 				returnedData as string)[0];
-				voteBounties = voteBounties.concat(...resps);
+			voteBountiesBytes = voteBountiesBytes.concat(...resps);
+		}
+
+		const voteBounties = voteBountiesBytes.map(convert);
+
+		// Fetch token prices
+		const prices = await getPricesFromContracts([VE_BAL_ADDRESS].concat(voteBounties.map((v) => v.rewardToken)));
+
+		const veTokenPrice = getPrice(prices, VE_BAL_ADDRESS);
+
+		for (const voteBounty of voteBounties) {
+			const isVoteEnded = voteBounty.remainingWeeks - 1 <= 0;
+
+			voteBounty.rewardTokenPrice = getPrice(prices, voteBounty.rewardToken);
+			const rewardsPerPeriod = parseFloat(formatUnits(ebn.from(voteBounty.rewardPerPeriod), voteBounty.rewardTokenDecimals));
+
+			const maxRewardPerVote = parseFloat(formatUnits(ebn.from(voteBounty.maxRewardPerVote), voteBounty.rewardTokenDecimals));
+			voteBounty.maxRewardPerVoteUSD = maxRewardPerVote * voteBounty.rewardTokenPrice || 0;
+
+			if (isVoteEnded) {
+				voteBounty.rewardPerPeriod = ebn.from(0);
+				voteBounty.rewardPerPeriodUSD = 0;
+			} else {
+				voteBounty.rewardPerPeriodUSD = parseFloat(formatUnits(ebn.from(voteBounty.totalRewardAmount), voteBounty.rewardTokenDecimals))
+					* voteBounty.rewardTokenPrice || 0;
+			}
+
+			const gaugeWeightNumber = voteBounty.gaugeWeight.div(ebn.from(10).pow(18)).toNumber();
+			let tokenPerVoteValue = rewardsPerPeriod / gaugeWeightNumber;
+			const rewardPerVoteValue = Math.min(voteBounty.rewardTokenPrice * tokenPerVoteValue, voteBounty.maxRewardPerVoteUSD);
+			tokenPerVoteValue = rewardPerVoteValue / voteBounty.rewardTokenPrice;
+			if (isVoteEnded) {
+				voteBounty.apr = 0;
+			} else {
+				const ratio = Math.min(rewardPerVoteValue * 100 / veTokenPrice, voteBounty.maxRewardPerVoteUSD * 100 / veTokenPrice);
+				voteBounty.apr = ratio * 52 / 100;
+			}
+
+			voteBounty.totalVotes = parseFloat(formatUnits(ebn.from(voteBounty.gaugeWeight), 18));
+			voteBounty.dollarPerVote = rewardPerVoteValue;
 		}
 
 		console.log(voteBounties);
@@ -332,3 +374,59 @@ export const getVotemarketBalVoteBounties = async () => {
 		return [];
 	}
 };
+
+export interface IVoteBounty {
+	gaugeAddress: string;
+	manager: string;
+	rewardToken: string;
+	rewardTokenSymbol: string;
+	rewardTokenDecimals: number;
+	rewardTokenPrice: number;
+	amountClaimed: ebn;
+	periodsLeft: number;
+	numberOfPeriods: number;
+	endTimestamp: number;
+	maxRewardPerVote: ebn;
+	maxRewardPerVoteUSD: number;
+	totalRewardAmount: ebn;
+	blacklist: string[];
+	isUpgradeable: boolean;
+	gaugeWeight: ebn;
+	haveUpgradeInQueue: boolean;
+	remainingClaimable: ebn;
+	remainingWeeks: number;
+	rewardPerPeriod: ebn;
+	rewardPerPeriodUSD: number;
+	apr: number;
+	totalVotes: number;
+	dollarPerVote: number;
+};
+
+const convert = (voteBountiesBytes: any[]): IVoteBounty => {
+	return {
+		gaugeAddress: voteBountiesBytes[0],
+		manager: voteBountiesBytes[1],
+		rewardToken: voteBountiesBytes[2],
+		rewardTokenSymbol: voteBountiesBytes[3],
+		rewardTokenDecimals: ebn.from(voteBountiesBytes[4]).toNumber(),
+		amountClaimed: ebn.from(voteBountiesBytes[5]),
+		periodsLeft: ebn.from(voteBountiesBytes[6]).toNumber(),
+		numberOfPeriods: ebn.from(voteBountiesBytes[7]).toNumber(),
+		endTimestamp: ebn.from(voteBountiesBytes[8]).toNumber(),
+		maxRewardPerVote: ebn.from(voteBountiesBytes[9]),
+		totalRewardAmount: ebn.from(voteBountiesBytes[10]),
+		blacklist: voteBountiesBytes[11],
+		isUpgradeable: voteBountiesBytes[12],
+		gaugeWeight: ebn.from(voteBountiesBytes[13]),
+		haveUpgradeInQueue: voteBountiesBytes[14],
+		remainingClaimable: ebn.from(voteBountiesBytes[15]),
+		remainingWeeks: ebn.from(voteBountiesBytes[16]).toNumber(),
+		rewardPerPeriod: ebn.from(voteBountiesBytes[17]),
+		rewardTokenPrice: 0,
+		maxRewardPerVoteUSD: 0,
+		rewardPerPeriodUSD: 0,
+		apr: 0,
+		totalVotes: 0,
+		dollarPerVote: 0,
+	};
+}
