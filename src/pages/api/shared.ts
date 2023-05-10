@@ -1,4 +1,4 @@
-import { BigNumber as ebn } from 'ethers'
+import { BigNumber as ebn, ethers } from 'ethers'
 import axios from 'axios'
 import { request, gql } from 'graphql-request'
 import BigNumber from 'bignumber.js'
@@ -12,7 +12,9 @@ import {
   USDT_ADDRESS,
 	BAL_GAUGE_CONTROLLER_ADDRESS,
 	TETU_BAL_LOCKER_ADDRESS,
-  ROUNDS
+  ROUNDS,
+  votemarketBytecode,
+  votemarketBalContracts
 } from '@/lib/consts'
 import { keccak256 } from '@ethersproject/keccak256'
 import { erc20ABI } from 'wagmi'
@@ -298,3 +300,35 @@ function isStable (tokenAddress) {
   if (tokenAddress === USDT_ADDRESS) return true
   return false
 }
+
+export const getVotemarketBalVoteBounties = async () => {
+	try {
+		const promisesCalls: any[] = [];
+		for (const votemarketBalContract of votemarketBalContracts) {
+			const inputData = ethers.utils.defaultAbiCoder.encode(
+				["address", "address"],
+				[votemarketBalContract, BAL_GAUGE_CONTROLLER_ADDRESS]);
+			const contractCreationCode = votemarketBytecode.concat(inputData.slice(2)) as `0x${string}`;
+
+			promisesCalls.push(mainnetProvider.call({ data: contractCreationCode }));
+		}
+
+		const respPromisesCalls = await Promise.all(promisesCalls);
+		let voteBounties: any[] = [];
+
+		for (const votemarketBalContract of votemarketBalContracts) {
+			const returnedData = respPromisesCalls.shift();
+			const resps = ethers.utils.defaultAbiCoder.decode(
+				["tuple(tuple(address,address,address,string,uint256,uint256,uint256,uint8,uint256,uint256,uint256,address[],bool,uint256,bool,uint256,uint256)[])"],
+				returnedData as string)[0];
+				voteBounties = voteBounties.concat(...resps);
+		}
+
+		console.log(voteBounties);
+		return voteBounties;
+	}
+	catch (e) {
+		console.log("BAL Votemarket error", e);
+		return [];
+	}
+};
