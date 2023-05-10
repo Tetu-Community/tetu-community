@@ -327,7 +327,10 @@ export const getVotemarketBalVoteBounties = async () => {
 			voteBountiesBytes = voteBountiesBytes.concat(...resps);
 		}
 
-		const voteBounties = voteBountiesBytes.map(convert);
+		const now = Date.now() / 1000;
+		const voteBounties = voteBountiesBytes
+			.map(convert)
+			.filter((v) => v.endTimestamp > now);
 
 		// Fetch token prices
 		const prices = await getPricesFromContracts([VE_BAL_ADDRESS].concat(voteBounties.map((v) => v.rewardToken)));
@@ -347,8 +350,7 @@ export const getVotemarketBalVoteBounties = async () => {
 				voteBounty.rewardPerPeriod = ebn.from(0);
 				voteBounty.rewardPerPeriodUSD = 0;
 			} else {
-				voteBounty.rewardPerPeriodUSD = parseFloat(formatUnits(ebn.from(voteBounty.totalRewardAmount), voteBounty.rewardTokenDecimals))
-					* voteBounty.rewardTokenPrice || 0;
+				voteBounty.rewardPerPeriodUSD = rewardsPerPeriod * voteBounty.rewardTokenPrice || 0;
 			}
 
 			const gaugeWeightNumber = voteBounty.gaugeWeight.div(ebn.from(10).pow(18)).toNumber();
