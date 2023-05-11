@@ -5,6 +5,14 @@ export const FEE_PERCENT = 2
 // add 1209600 for hh deadline
 export const ROUNDS = [
 	{
+		number: 20,
+		title: 'BRV-020: Gauge Weight for Week of 11th May 2023',
+		proposalId: '0x8bbcfa519547de8f5ea6e5f99b914683860a6bf6c736cd9c7b9b2aba1266b400',
+		bribeProposalId: '0x8bbcfa519547de8f5ea6e5f99b914683860a6bf6c736cd9c7b9b2aba1266b400',
+		hhBalancerDeadline: 1684368000,
+    maxBribePerVote: '$0.22'
+	},
+	{
 		number: 19,
 		title: 'BRV-019: Gauge Weight for Week of 27th April 2023',
 		proposalId: '0x5f4cd1fd2edff65587af82b23f54e2bf2c4a79f499ccfb09f89272ff121d8088',
