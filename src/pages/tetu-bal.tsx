@@ -175,6 +175,8 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 			bribePerVoteVm = bribePerVoteVm.times(2);
 			vmBribesUsd = vmBribesUsd.times(2);
 
+      if (!hideSideMarketData) totalBribes = totalBribes.plus(vmBribesUsd)
+
 			const scoreTotal = hideSideMarketData ? tetuScore : tetuScore.plus(hhScore)
 
 			const totalBribeUsd = hideSideMarketData ? tetuBribeUsd : tetuBribeUsd.plus(hhBribeUsd).plus(questBribesUsd).plus(vmBribesUsd);
