@@ -16,7 +16,8 @@ import { useAccount } from 'wagmi'
 import Countdown from 'react-countdown'
 import { Tooltip, ToggleSwitch, Dropdown } from 'flowbite-react'
 import { ROUNDS, BAL_EMISSIONS_PER_WEEK, GAUGE_TYPES_TO_CHAIN_NAME } from '@/lib/consts'
-import { getCurrentTetuVeBALGaugeVotes } from '@/pages/api/shared'
+import { IVoteBounty, getCurrentTetuVeBALGaugeVotes } from '@/pages/api/shared'
+import { equals } from '@/lib/stringUtils'
 
 function tetuBribesToTooltipString(tetuBribes) {
 	return tetuBribes
@@ -124,7 +125,7 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 				const foundOldTetuVotePercent = existingTetuVotes[proposal.proposal]
 				if (foundOldTetuVotePercent) {
 					hhScore = hhScore.minus(BigNumber(data.tetuBalTotalSupply).times(foundOldTetuVotePercent))
-          if (hhScore.lt(0)) hhScore = BigNumber(0)
+					if (hhScore.lt(0)) hhScore = BigNumber(0)
 				}
 
 				for (const b of proposal.bribes) {
@@ -156,9 +157,27 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 			questBribesUsd = questBribesUsd.times(2).shiftedBy(-18)
 			bribePerVoteQuest = bribePerVoteQuest.times(2).shiftedBy(-18)
 
+			// Find votemarket bribes
+			let vmBribesUsd = BigNumber(0);
+			let bribePerVoteVm = BigNumber(0);
+			const gaugeAddress = data.choicesToGaugeAddress[choice];
+			for (const vmi of data.votemarket) {
+				const vm = vmi as IVoteBounty;
+				if (!equals(vm.gaugeAddress, gaugeAddress)) {
+					continue;
+				}
+
+				vmBribesUsd = vmBribesUsd.plus(vm.rewardPerPeriodUSD);
+				bribePerVoteVm = bribePerVoteVm.plus(vm.maxRewardPerVoteUSD);
+			}
+
+			// Multiply per 2 because VM rewards are per week
+			bribePerVoteVm = bribePerVoteVm.times(2);
+			vmBribesUsd = vmBribesUsd.times(2);
+
 			const scoreTotal = hideSideMarketData ? tetuScore : tetuScore.plus(hhScore)
 
-			const totalBribeUsd = hideSideMarketData ? tetuBribeUsd : tetuBribeUsd.plus(hhBribeUsd).plus(questBribesUsd)
+			const totalBribeUsd = hideSideMarketData ? tetuBribeUsd : tetuBribeUsd.plus(hhBribeUsd).plus(questBribesUsd).plus(vmBribesUsd);
 
 			// count tetu bribes divided by the number of tetu votes
 			const bribePerVoteTetu = tetuScore.gt(0) ? tetuBribeUsd.div(tetuScore) : BigNumber(0)
@@ -167,7 +186,7 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 			const bribePerVoteHH = scoreTotal.gt(0) ? hhBribeUsd.div(scoreTotal) : BigNumber(0)
 			const bribePerVoteTotal = hideSideMarketData
 				? bribePerVoteTetu
-				: bribePerVoteTetu.plus(bribePerVoteHH).plus(bribePerVoteQuest)
+				: bribePerVoteTetu.plus(bribePerVoteHH).plus(bribePerVoteQuest).plus(bribePerVoteVm);
 			const myVotes = myVoteChoicesToVp[choice] || BigNumber(0)
 			const myBribes = bribePerVoteTotal.times(myVotes)
 
@@ -180,11 +199,13 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 				scoreTotal,
 				tetuBribeUsd,
 				questBribesUsd,
+				vmBribesUsd,
 				hhBribeUsd,
 				totalBribeUsd,
 				bribePerVoteHH,
 				bribePerVoteQuest,
 				bribePerVoteTetu,
+				bribePerVoteVm,
 				bribePerVoteTotal,
 				myVotes,
 				myBribes,
@@ -316,6 +337,15 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 								Warden Quest &nbsp;
 								<ArrowTopRightOnSquareIcon className="inline w-4 mb-1" />
 							</a>
+							<a
+								href="https://votemarket.stakedao.org/?market=bal"
+								className="ml-4"
+								target="_blank"
+								rel="noreferrer"
+							>
+								Votemarket &nbsp;
+								<ArrowTopRightOnSquareIcon className="inline w-4 mb-1" />
+							</a>
 						</h3>
 						<ToggleSwitch
 							checked={hideSideMarketData}
@@ -415,7 +445,7 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 											<td className="py-4 px-6">
 												{td.totalBribeUsd.gt(0) ? '$' + td.totalBribeUsd.toFixed(0) : '-'}
 												{!hideSideMarketData &&
-												(td.hhBribeUsd.gt(0) || td.questBribesUsd.gt(0)) ? (
+												(td.hhBribeUsd.gt(0) || td.questBribesUsd.gt(0) || td.vmBribesUsd.gt(0)) ? (
 													<>
 														&nbsp;
 														<div className="tooltip-wrapper">
@@ -425,6 +455,7 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 																	['Tetu bribes', td.tetuBribeUsd],
 																	['Warden Quest bribes', td.questBribesUsd],
 																	['Hidden Hand bribes', td.hhBribeUsd],
+																	['Votemarket vote bounty', td.vmBribesUsd],
 																])}
 																placement="top"
 															>
@@ -458,7 +489,7 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 													: '-'}
 
 												{!hideSideMarketData &&
-												(td.bribePerVoteHH.gt(0) || td.bribePerVoteQuest.gt(0)) ? (
+												(td.bribePerVoteHH.gt(0) || td.bribePerVoteQuest.gt(0) || td.bribePerVoteVm.gt(0)) ? (
 													<>
 														&nbsp;
 														<div className="tooltip-wrapper">
@@ -468,6 +499,7 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 																	['Tetu $/tetuBalPower', td.bribePerVoteTetu],
 																	['Warden Quest $/veBAL', td.bribePerVoteQuest],
 																	['Hidden Hand $/veBAL', td.bribePerVoteHH],
+																	['Votemarket $/veBAL', td.bribePerVoteVm],
 																])}
 																placement="top"
 															>

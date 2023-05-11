@@ -1,4 +1,4 @@
-import { BigNumber as ebn } from 'ethers'
+import { BigNumber as ebn, ethers } from 'ethers'
 import axios from 'axios'
 import { request, gql } from 'graphql-request'
 import BigNumber from 'bignumber.js'
@@ -12,15 +12,21 @@ import {
   USDT_ADDRESS,
 	BAL_GAUGE_CONTROLLER_ADDRESS,
 	TETU_BAL_LOCKER_ADDRESS,
-  ROUNDS
+  ROUNDS,
+  votemarketBytecode,
+  votemarketBalContracts,
+  VE_BAL_ADDRESS
 } from '@/lib/consts'
 import { keccak256 } from '@ethersproject/keccak256'
 import { erc20ABI } from 'wagmi'
 import { mainnetProvider } from '@/lib/ethers'
 import gaugeControllerAbi from '@/abi/GaugeController.json'
 import range from 'lodash.range'
+import { getPrice, getPricesFromContracts } from '@/lib/defilammaUtils'
+import { formatUnits } from 'ethers/lib/utils'
 
 const SNAPSHOT_GRAPHQL_ENDPOINT = 'https://hub.snapshot.org/graphql'
+const SEC_PER_WEEK = 60 * 60 * 24 * 7
 
 export async function getCoingeckoPrice(id: string): Promise<BigNumber> {
 	const resp = await axios.get(`https://api.coingecko.com/api/v3/coins/${id}`)
@@ -242,7 +248,6 @@ export async function getCurrentTetuVeBALGaugeVotes() {
 // Fetch gauge current bias & handle Quest blacklist feature
 // Remove blacklisted addresses votes from gauge bias
 async function getGaugeBiasBlacklist(gauge: string, blacklist: string[]): Promise<BigNumber> {
-	const secPerWeek = 60 * 60 * 24 * 7
 	const controllerContract = new Contract(BAL_GAUGE_CONTROLLER_ADDRESS, gaugeControllerAbi, mainnetProvider)
 
 	if (blacklist.length === 0) {
@@ -250,7 +255,7 @@ async function getGaugeBiasBlacklist(gauge: string, blacklist: string[]): Promis
 		return new BigNumber(bias.toHexString())
 	}
 
-	const nextPeriod = (Math.trunc(Date.now() / (1000 * secPerWeek)) + 1) * secPerWeek
+	const nextPeriod = (Math.trunc(Date.now() / (1000 * SEC_PER_WEEK)) + 1) * SEC_PER_WEEK
 
 	const [gaugeBias, blacklistVotes] = await Promise.all([
 		controllerContract.get_gauge_weight(gauge),
@@ -297,4 +302,133 @@ function isStable (tokenAddress) {
   if (tokenAddress === USDC_ADDRESS) return true
   if (tokenAddress === USDT_ADDRESS) return true
   return false
+}
+
+export const getVotemarketBalVoteBounties = async () => {
+	try {
+		const promisesCalls: any[] = [];
+		for (const votemarketBalContract of votemarketBalContracts) {
+			const inputData = ethers.utils.defaultAbiCoder.encode(
+				["address", "address"],
+				[votemarketBalContract, BAL_GAUGE_CONTROLLER_ADDRESS]);
+			const contractCreationCode = votemarketBytecode.concat(inputData.slice(2)) as `0x${string}`;
+
+			promisesCalls.push(mainnetProvider.call({ data: contractCreationCode }));
+		}
+
+		const respPromisesCalls = await Promise.all(promisesCalls);
+		let voteBountiesBytes: any[] = [];
+
+		for (const votemarketBalContract of votemarketBalContracts) {
+			const returnedData = respPromisesCalls.shift();
+			const resps = ethers.utils.defaultAbiCoder.decode(
+				["tuple(tuple(address,address,address,string,uint256,uint256,uint256,uint8,uint256,uint256,uint256,address[],bool,uint256,bool,uint256,uint256,uint256)[])"],
+				returnedData as string)[0];
+			voteBountiesBytes = voteBountiesBytes.concat(...resps);
+		}
+
+		const now = Date.now() / 1000;
+		const voteBounties = voteBountiesBytes
+			.map(convert)
+			// Remove ended bribes (bribes where we only have the last claim period)
+			.filter((v) => v.endTimestamp - SEC_PER_WEEK > now);
+
+		// Fetch token prices
+		const prices = await getPricesFromContracts([VE_BAL_ADDRESS].concat(voteBounties.map((v) => v.rewardToken)));
+
+		const veTokenPrice = getPrice(prices, VE_BAL_ADDRESS);
+
+		for (const voteBounty of voteBounties) {
+			const isVoteEnded = voteBounty.remainingWeeks - 1 <= 0;
+
+			voteBounty.rewardTokenPrice = getPrice(prices, voteBounty.rewardToken);
+			const rewardsPerPeriod = parseFloat(formatUnits(ebn.from(voteBounty.rewardPerPeriod), voteBounty.rewardTokenDecimals));
+
+			const maxRewardPerVote = parseFloat(formatUnits(ebn.from(voteBounty.maxRewardPerVote), voteBounty.rewardTokenDecimals));
+			voteBounty.maxRewardPerVoteUSD = maxRewardPerVote * voteBounty.rewardTokenPrice || 0;
+
+			if (isVoteEnded) {
+				voteBounty.rewardPerPeriod = ebn.from(0);
+				voteBounty.rewardPerPeriodUSD = 0;
+			} else {
+				voteBounty.rewardPerPeriodUSD = rewardsPerPeriod * voteBounty.rewardTokenPrice || 0;
+			}
+
+			const gaugeWeightNumber = voteBounty.gaugeWeight.div(ebn.from(10).pow(18)).toNumber();
+			let tokenPerVoteValue = rewardsPerPeriod / gaugeWeightNumber;
+			const rewardPerVoteValue = Math.min(voteBounty.rewardTokenPrice * tokenPerVoteValue, voteBounty.maxRewardPerVoteUSD);
+			tokenPerVoteValue = rewardPerVoteValue / voteBounty.rewardTokenPrice;
+			if (isVoteEnded) {
+				voteBounty.apr = 0;
+			} else {
+				const ratio = Math.min(rewardPerVoteValue * 100 / veTokenPrice, voteBounty.maxRewardPerVoteUSD * 100 / veTokenPrice);
+				voteBounty.apr = ratio * 52 / 100;
+			}
+
+			voteBounty.totalVotes = parseFloat(formatUnits(ebn.from(voteBounty.gaugeWeight), 18));
+			voteBounty.dollarPerVote = rewardPerVoteValue;
+		}
+
+		return voteBounties;
+	}
+	catch (e) {
+		console.log("BAL Votemarket error", e);
+		return [];
+	}
+};
+
+export interface IVoteBounty {
+	gaugeAddress: string;
+	manager: string;
+	rewardToken: string;
+	rewardTokenSymbol: string;
+	rewardTokenDecimals: number;
+	rewardTokenPrice: number;
+	amountClaimed: ebn;
+	periodsLeft: number;
+	numberOfPeriods: number;
+	endTimestamp: number;
+	maxRewardPerVote: ebn;
+	maxRewardPerVoteUSD: number;
+	totalRewardAmount: ebn;
+	blacklist: string[];
+	isUpgradeable: boolean;
+	gaugeWeight: ebn;
+	haveUpgradeInQueue: boolean;
+	remainingClaimable: ebn;
+	remainingWeeks: number;
+	rewardPerPeriod: ebn;
+	rewardPerPeriodUSD: number;
+	apr: number;
+	totalVotes: number;
+	dollarPerVote: number;
+};
+
+const convert = (voteBountiesBytes: any[]): IVoteBounty => {
+	return {
+		gaugeAddress: voteBountiesBytes[0],
+		manager: voteBountiesBytes[1],
+		rewardToken: voteBountiesBytes[2],
+		rewardTokenSymbol: voteBountiesBytes[3],
+		rewardTokenDecimals: ebn.from(voteBountiesBytes[4]).toNumber(),
+		amountClaimed: ebn.from(voteBountiesBytes[5]),
+		periodsLeft: ebn.from(voteBountiesBytes[6]).toNumber(),
+		numberOfPeriods: ebn.from(voteBountiesBytes[7]).toNumber(),
+		endTimestamp: ebn.from(voteBountiesBytes[8]).toNumber(),
+		maxRewardPerVote: ebn.from(voteBountiesBytes[9]),
+		totalRewardAmount: ebn.from(voteBountiesBytes[10]),
+		blacklist: voteBountiesBytes[11],
+		isUpgradeable: voteBountiesBytes[12],
+		gaugeWeight: ebn.from(voteBountiesBytes[13]),
+		haveUpgradeInQueue: voteBountiesBytes[14],
+		remainingClaimable: ebn.from(voteBountiesBytes[15]),
+		remainingWeeks: ebn.from(voteBountiesBytes[16]).toNumber(),
+		rewardPerPeriod: ebn.from(voteBountiesBytes[17]),
+		rewardTokenPrice: 0,
+		maxRewardPerVoteUSD: 0,
+		rewardPerPeriodUSD: 0,
+		apr: 0,
+		totalVotes: 0,
+		dollarPerVote: 0,
+	};
 }
