@@ -171,6 +171,10 @@ const TetuBal: FC<{ existingTetuVotes: any }> = ({ existingTetuVotes }) => {
 				bribePerVoteVm = bribePerVoteVm.plus(vm.maxRewardPerVoteUSD);
 			}
 
+			// Multiply per 2 because VM rewards are per week
+			bribePerVoteVm = bribePerVoteVm.times(2);
+			vmBribesUsd = vmBribesUsd.times(2);
+
 			const scoreTotal = hideSideMarketData ? tetuScore : tetuScore.plus(hhScore)
 
 			const totalBribeUsd = hideSideMarketData ? tetuBribeUsd : tetuBribeUsd.plus(hhBribeUsd).plus(questBribesUsd).plus(vmBribesUsd);

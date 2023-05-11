@@ -26,6 +26,7 @@ import { getPrice, getPricesFromContracts } from '@/lib/defilammaUtils'
 import { formatUnits } from 'ethers/lib/utils'
 
 const SNAPSHOT_GRAPHQL_ENDPOINT = 'https://hub.snapshot.org/graphql'
+const SEC_PER_WEEK = 60 * 60 * 24 * 7
 
 export async function getCoingeckoPrice(id: string): Promise<BigNumber> {
 	const resp = await axios.get(`https://api.coingecko.com/api/v3/coins/${id}`)
@@ -247,7 +248,6 @@ export async function getCurrentTetuVeBALGaugeVotes() {
 // Fetch gauge current bias & handle Quest blacklist feature
 // Remove blacklisted addresses votes from gauge bias
 async function getGaugeBiasBlacklist(gauge: string, blacklist: string[]): Promise<BigNumber> {
-	const secPerWeek = 60 * 60 * 24 * 7
 	const controllerContract = new Contract(BAL_GAUGE_CONTROLLER_ADDRESS, gaugeControllerAbi, mainnetProvider)
 
 	if (blacklist.length === 0) {
@@ -255,7 +255,7 @@ async function getGaugeBiasBlacklist(gauge: string, blacklist: string[]): Promis
 		return new BigNumber(bias.toHexString())
 	}
 
-	const nextPeriod = (Math.trunc(Date.now() / (1000 * secPerWeek)) + 1) * secPerWeek
+	const nextPeriod = (Math.trunc(Date.now() / (1000 * SEC_PER_WEEK)) + 1) * SEC_PER_WEEK
 
 	const [gaugeBias, blacklistVotes] = await Promise.all([
 		controllerContract.get_gauge_weight(gauge),
@@ -330,7 +330,8 @@ export const getVotemarketBalVoteBounties = async () => {
 		const now = Date.now() / 1000;
 		const voteBounties = voteBountiesBytes
 			.map(convert)
-			.filter((v) => v.endTimestamp > now);
+			// Remove ended bribes (bribes where we only have the last claim period)
+			.filter((v) => v.endTimestamp - SEC_PER_WEEK > now);
 
 		// Fetch token prices
 		const prices = await getPricesFromContracts([VE_BAL_ADDRESS].concat(voteBounties.map((v) => v.rewardToken)));
@@ -368,7 +369,6 @@ export const getVotemarketBalVoteBounties = async () => {
 			voteBounty.dollarPerVote = rewardPerVoteValue;
 		}
 
-		console.log(voteBounties);
 		return voteBounties;
 	}
 	catch (e) {
