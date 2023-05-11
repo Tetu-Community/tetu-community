@@ -338,6 +338,17 @@ export const getVotemarketBalVoteBounties = async () => {
 
 		const veTokenPrice = getPrice(prices, VE_BAL_ADDRESS);
 
+		const blacklistCalls: any[] = [];
+		const c = new Contract(BAL_GAUGE_CONTROLLER_ADDRESS, gaugeControllerAbi, mainnetProvider);
+		for (const voteBounty of voteBounties) {
+			for (const b of voteBounty.blacklist) {
+				blacklistCalls.push(c.vote_user_slopes(b, voteBounty.gaugeAddress));
+			}
+		}
+
+		const blacklistResp = await Promise.all(blacklistCalls);
+		const nextPeriod = (Math.trunc(Date.now() / (1000 * SEC_PER_WEEK)) + 1) * SEC_PER_WEEK
+
 		for (const voteBounty of voteBounties) {
 			const isVoteEnded = voteBounty.remainingWeeks - 1 <= 0;
 
@@ -352,6 +363,12 @@ export const getVotemarketBalVoteBounties = async () => {
 				voteBounty.rewardPerPeriodUSD = 0;
 			} else {
 				voteBounty.rewardPerPeriodUSD = rewardsPerPeriod * voteBounty.rewardTokenPrice || 0;
+			}
+
+			for (const b of voteBounty.blacklist) {
+				const weightBa = blacklistResp.shift();
+				const veCRVVoted = ebn.from(weightBa.slope).mul(ebn.from(weightBa.end).sub(nextPeriod));
+                voteBounty.gaugeWeight = voteBounty.gaugeWeight.sub(veCRVVoted);
 			}
 
 			const gaugeWeightNumber = voteBounty.gaugeWeight.div(ebn.from(10).pow(18)).toNumber();
