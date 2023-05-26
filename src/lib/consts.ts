@@ -6,6 +6,14 @@ export const VE_BAL_ADDRESS = "0x5c6ee304399dbdb9c8ef030ab642b10820db8f56";
 // add 1209600 for hh deadline
 export const ROUNDS = [
 	{
+		number: 21,
+		title: 'BRV-021: Gauge Weight for Week of 25th May 2023',
+		proposalId: '0x274f13b610d1355058b5a5e279f6fa057c904531c6d481afe264d5c17baaffed',
+		bribeProposalId: '0x274f13b610d1355058b5a5e279f6fa057c904531c6d481afe264d5c17baaffed',
+		hhBalancerDeadline: 1685577600,
+		maxBribePerVote: '$0.2'
+	},
+	{
 		number: 20,
 		title: 'BRV-020: Gauge Weight for Week of 11th May 2023',
 		proposalId: '0x8bbcfa519547de8f5ea6e5f99b914683860a6bf6c736cd9c7b9b2aba1266b400',
